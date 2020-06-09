@@ -1,0 +1,14 @@
+# Ignore everything but gitignore
+/**
+.*
+!.gitignore
+
+# Include source files
+!/src/**
+!/worker/worker.js
+
+# The README
+!README.md
+
+# And Cargo.toml
+!Cargo.toml

@@ -1,0 +1,44 @@
+[package]
+name = "website"
+version = "0.1.0"
+authors = ["Isaac Clayton <slightknack> (slightknack@gmail.com)"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies]
+# wasm
+cfg-if = "0.1.2"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+console_error_panic_hook = { version = "0.1", optional = true }
+wee_alloc = { version = "0.4", optional = true }
+
+# rendering
+pulldown-cmark = { version = "0.7", default-features = false }
+
+# js integration
+js-sys = "0.3"
+futures = "0.3"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  'FetchEvent',
+  # 'FormData',
+  'Request',
+  'Response',
+  'Headers',
+  'ResponseInit',
+  'Blob',
+]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.2"
+
+[profile.release]
+opt-level = "s"
