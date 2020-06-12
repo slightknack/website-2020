@@ -1,6 +1,7 @@
 # Ignore everything but gitignore
 /**
 .*
+!*/
 !.gitignore
 
 # Include source files
