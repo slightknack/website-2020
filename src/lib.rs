@@ -16,13 +16,16 @@ mod responder;
 mod route;
 mod hrdb;
 
+use hrdb::HRDB;
 use url::Url;
 use route::Route;
 use logger::log;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
+use wasm_bindgen_futures::future_to_promise;
 use js_sys::Promise;
 use web_sys::FetchEvent;
+use futures::Future;
 
 // main should act as the interface between rust and js
 // i.e. no other modules shouldn't have to care about js_sys, etc.
@@ -32,7 +35,7 @@ use web_sys::FetchEvent;
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
 pub async fn main(event: FetchEvent) -> Promise {
-    Promise::resolve(JsValue::from(JsFuture::from(hrdb::HRDB::init()).await.unwrap().await));
+    future_to_promise(HRDB::init());
 
     // let request = event.request();
     // let url = match Url::parse(&request.url()) {

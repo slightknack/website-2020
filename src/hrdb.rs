@@ -105,6 +105,10 @@ impl HRDB {
         return Ok(());
     }
 
+    // pub async fn wrap<A, B>(future: impl futures::Future) -> Result<JsFuture, JsFuture> {
+    // 
+    // }
+
     pub async fn fork(from: Location, into: Location) -> Result<(), String> {
         // check that new branch is unique
         // to 'copy' into an existing branch, use merge
