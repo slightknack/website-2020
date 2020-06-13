@@ -42,11 +42,16 @@ pub async fn read(key: &str) -> Result<String, String> {
         .as_string().ok_or("Could not convert to String".to_owned())
 }
 
-pub async fn append(key: &str, value: &str) -> Result<(), String> {
-    let contents = read(key).await? + "\n" + value;
+
+pub async fn append(&key: &str, value: Vec<String>) -> Result<(), String> {
+    let contents = read(key).await? + "\n" + value.join("\n");
     kv::value(kv::AddressedNS::put(&key, &contents))
-        .await.ok_or("Could not append to kv")?;
+        .await.ok_or("Could not push to kv")?;
     return Ok(());
+}
+
+pub async fn push(key: &str, value: &str) -> Result<(), String> {
+    return append(key, vec![value])
 }
 
 pub async fn list(key: &str) -> Result<Vec<String>, String> {
@@ -92,22 +97,38 @@ impl HRDB {
         let version = write(&root.to_string()?).await?;
 
         ensure("master").await?;
-        append("master", &version);
+        push("master", &version);
 
         ensure("hrdb").await?;
-        append("hrdb", "master").await?;
+        push("hrdb", "master").await?;
 
         return Ok(());
     }
 
-    // pub async fn fork(location, location)
+    pub async fn fork(from: Location, into: Location) -> Result<(), String> {
+        // check that new branch is unique
+        // to 'copy' into an existing branch, use merge
+        if let Ok(_) = read(&into.branch()).await {
+            return Err("Can only fork into new branches".to_owned())
+        }
+
+        let from_branch  = Branch::from(&from.branch()).await?;
+        let from_version = &from.version()?;
+        let into_branch  = from_branch.fork(from_version, into.branch())?;
+
+        ensure(into.branch()).await?;
+        append(into.branch(), into_branch.versions());
+
+        return Ok(());
+    }
+
     // pub async fn merge(location, location)
 
     /// Updates page at location, iterating backwards through path chain.
-    async fn commit(location: &Location, updated: &Page) -> Result<(), String> {
+    async fn commit(location: Location, updated: Page) -> Result<(), String> {
         // commits can only be applied to the head version of the branch
         // check that this commit is being applied to the head
-        let head = Branch::from(&location.branch()).await?.head()?;
+        let head    = Branch::from(&location.branch()).await?.head()?;
         let version = location.version()?;
 
         if version != head {
@@ -118,51 +139,98 @@ impl HRDB {
         let mut address = write(&updated.to_string()?).await?;
 
         // next, build an iterator going to the version root through the page tree
-        let path = location.path()?;
+        let path          = location.path()?;
         let mut addresses = path.iter().rev();
-        let mut child = addresses.next()
-            .ok_or("Can not commit to a path without a Page")?;
+        let mut child     = Page::from(addresses.next()
+            .ok_or("Can not commit to a path without a Page")?,
+        ).await?;
 
         // work back through the path in parent child pairs
         // replacing the parent's reference to the child with the updated child's address
         for parent in addresses {
             let mut page = Page::from(parent).await?;
-            let index = page.children.iter().position(|x| x == child)
-                .ok_or("Path is broken, parent Page does not have specified child")?;
-            mem::replace(&mut page.children[index], address);
+            page.children.insert(child.id, address);
             address = write(&page.to_string()?).await?;
-            child = parent;
+            child   = page;
         }
 
         // push the updated root version onto the branch tree
-        append(&location.branch(), &address).await?;
+        push(&location.branch(), &address).await?;
         return Ok(());
     }
 
     /// Creates a new page on the head of a branch,
     /// returning the new page if successful
     pub async fn create(
-        location: &Location,
+        location: Location,
         title: String,
         content: String,
-        fields: HashMap<String, String>
+        fields: HashMap<String, String>,
     ) -> Result<(), String> {
-        let new = Page::new(title, content, fields);
-        let address = write(&new.to_string()?).await?;
-        let mut parent = Page::from(
-            location.path()?.last()
-                .ok_or("Can not create Page beside root")?
-        ).await?;
-        parent.children.push(address);
+        let new        = Page::new(title, content, fields);
+        let address    = write(&new.to_string()?).await?;
+        let mut parent = Page::from(&location.end()?).await?;
+        parent.children.insert(new.id, address);
 
-        HRDB::commit(&location.back()?, &parent).await?;
+        HRDB::commit(location.back()?, parent).await?;
         return Ok(());
     }
 
-    // pub async fn edit(location, ...)
-    // pub async fn move(location, ...)
-    // pub async fn duplicate(location)
-    // pub async fn delete(location)
+    pub async fn edit(
+        location: Location,
+        title: Option<String>,
+        content: Option<String>,
+        fields: Option<HashMap<String, String>>,
+    ) -> Result<(), String> {
+        let mut page = Page::from(&location.end()?).await?;
+
+        if let Some(c) = content { page.content = write(&c.to_string()).await? }
+        if let Some(t) = title   { page.title   = t }
+        if let Some(f) = fields  { page.fields  = f }
+
+        HRDB::commit(location, page).await?;
+        return Ok(());
+    }
+
+    pub async fn read(location: &Location) -> Result<(String, String, HashMap<String, String>), String> {
+        let page = Page::from(&location.end()?).await?;
+
+        let title   = page.title;
+        let content = read(&page.content).await?;
+        let fields  = page.fields;
+
+        return Ok((title, content, fields));
+    }
+
+    // more than just a create and delete.
+    // preserves id, commits to HRDB in safe order.
+    pub async fn relocate(from: Location, to: Location) -> Result<(), String> {
+        let mut parent  = Page::from(&from.back()?.end()?).await?;
+        let from_page   = Page::from(&from.end()?).await?;
+        let mut to_page = Page::from(&to.end()?).await?;
+
+        to_page.children.insert(from_page.id.clone(), from.end()?);
+        parent.children.remove(&from_page.id);
+        HRDB::commit(to, to_page).await?;
+        HRDB::commit(from.back()?, parent).await?;
+
+        return Ok(());
+    }
+
+    // looks like a simple read + write. too trivial to include.
+    // pub async fn duplicate(location: Location) -> Result<(), String> {
+    //     let (title, content, fields) = HRDB::read(&location).await?;
+    //     HRDB::create(location.back()?, title, content, fields).await?;
+    //     return Ok(());
+    // }
+
+    pub async fn delete(location: Location) -> Result<(), String> {
+        let mut parent = Page::from(&location.back()?.end()?).await?;
+        let page       = Page::from(&location.end()?).await?;
+        parent.children.remove(&page.id);
+        HRDB::commit(location.back()?, parent).await?;
+        return Ok(());
+    }
 }
 
 struct Branch {
@@ -204,7 +272,7 @@ struct Page {
     pub fields:   HashMap<String, String>,
     pub title:    String,
     pub content:  String, // Content
-    pub children: Vec<String>, // page checksum
+    pub children: HashMap<String, String>, // id -> page checksum
 }
 
 impl Page {
@@ -296,6 +364,27 @@ impl Location {
                 self.version()?.clone(),
                 path,
             )
+        )
+    }
+
+    pub fn forward(&self, address: String) -> Result<Location, String> {
+        let mut path = self.path()?;
+        path.push(address);
+
+        Ok(
+            Location::from_branch_version_and_path(
+                self.branch().clone(),
+                self.version()?.clone(),
+                path,
+            )
+        )
+    }
+
+    pub fn end(&self) -> Result<String, String> {
+        Ok(
+            self.path()?.last()
+                .ok_or("Path has no addresses")?
+                .to_string()
         )
     }
 }

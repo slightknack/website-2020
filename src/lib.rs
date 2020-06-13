@@ -7,6 +7,7 @@ extern crate futures;
 extern crate serde;
 extern crate serde_json;
 extern crate crypto;
+extern crate url;
 
 mod utils;
 mod kv;
@@ -15,6 +16,8 @@ mod responder;
 mod route;
 mod hrdb;
 
+use url::Url;
+use route::Route;
 use logger::log;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
@@ -29,14 +32,23 @@ use web_sys::FetchEvent;
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
 pub async fn main(event: FetchEvent) -> Promise {
-    let request = event.request();
+    hrdb::HRDB::init();
 
-    // JsFuture::from(kv::StaticNS::put("working", "Heck <strong>yeah</strong>")).await.unwrap();
-    // let working = kv::StaticNS::get("working", "text");
-    // let content = format!(
-    //     "<h1>Currently a work in progress...</h1>\n<p>Does ( ͡° ͜ʖ ͡°) think the database is working? {}!<p>",
-    //     JsFuture::from(working).await.unwrap().as_string().unwrap().trim(),
-    // );
+    // let request = event.request();
+    // let url = match Url::parse(&request.url()) {
+    //     Ok(v)  => v,
+    //     Err(e) => return Promise::reject(&e),
+    // };
+    // let route = Route::new(url.path().to_lowercase());
+    // let method = Method::new(request.method().to_lowercase());
+
+    // match (route.iter().next(), method) {
+    //     (Some("static"), Method::Get) => _, // static content, i.e. html, css, etc.
+    //     (Some("authenticate"), Method::Post) => _, // cookie management
+    //     (Some(_), Method::Get) => _, // hrdb
+    //     (Some(_), _) => _, // not allowed
+    //     (None, _) => _, // 404
+    // }
 
     return Promise::resolve(&JsValue::from(&responder::html("Hello, world", 200).unwrap()));
 }

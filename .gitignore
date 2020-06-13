@@ -1,11 +1,12 @@
 # Ignore everything but gitignore
 /**
 .*
-!*/
 !.gitignore
 
 # Include source files
+!/src
 !/src/**
+!/worker
 !/worker/worker.js
 
 # The README
