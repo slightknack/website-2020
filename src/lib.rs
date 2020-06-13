@@ -32,7 +32,7 @@ use web_sys::FetchEvent;
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
 pub async fn main(event: FetchEvent) -> Promise {
-    hrdb::HRDB::init();
+    Promise::resolve(JsValue::from(JsFuture::from(hrdb::HRDB::init()).await.unwrap().await));
 
     // let request = event.request();
     // let url = match Url::parse(&request.url()) {

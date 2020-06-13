@@ -43,15 +43,15 @@ pub async fn read(key: &str) -> Result<String, String> {
 }
 
 
-pub async fn append(&key: &str, value: Vec<String>) -> Result<(), String> {
-    let contents = read(key).await? + "\n" + value.join("\n");
+pub async fn append(key: &str, value: Vec<String>) -> Result<(), String> {
+    let contents = read(key).await? + "\n" + &value.join("\n");
     kv::value(kv::AddressedNS::put(&key, &contents))
         .await.ok_or("Could not push to kv")?;
     return Ok(());
 }
 
-pub async fn push(key: &str, value: &str) -> Result<(), String> {
-    return append(key, vec![value])
+pub async fn push(key: &str, value: String) -> Result<(), String> {
+    return Ok(append(key, vec![value]).await?);
 }
 
 pub async fn list(key: &str) -> Result<Vec<String>, String> {
@@ -97,10 +97,10 @@ impl HRDB {
         let version = write(&root.to_string()?).await?;
 
         ensure("master").await?;
-        push("master", &version);
+        push("master", version).await?;
 
         ensure("hrdb").await?;
-        push("hrdb", "master").await?;
+        push("hrdb", "master".to_owned()).await?;
 
         return Ok(());
     }
@@ -114,10 +114,10 @@ impl HRDB {
 
         let from_branch  = Branch::from(&from.branch()).await?;
         let from_version = &from.version()?;
-        let into_branch  = from_branch.fork(from_version, into.branch())?;
+        let into_branch  = from_branch.fork(from_version, into.branch()).await?;
 
-        ensure(into.branch()).await?;
-        append(into.branch(), into_branch.versions());
+        ensure(&into.branch()).await?;
+        append(&into.branch(), into_branch.versions).await?;
 
         return Ok(());
     }
@@ -155,7 +155,7 @@ impl HRDB {
         }
 
         // push the updated root version onto the branch tree
-        push(&location.branch(), &address).await?;
+        push(&location.branch(), address).await?;
         return Ok(());
     }
 
@@ -287,7 +287,7 @@ impl Page {
             fields,
             title,
             content,
-            children: vec![],
+            children: HashMap::new(),
         }
     }
 
@@ -356,7 +356,7 @@ impl Location {
 
     pub fn back(&self) -> Result<Location, String> {
         let mut path = self.path()?;
-        path.pop().ok_or("Can not go back past root");
+        path.pop().ok_or("Can not go back past root")?;
 
         Ok(
             Location::from_branch_version_and_path(
