@@ -11,7 +11,7 @@ async function handleEvent(event) {
         // handle request
         const ev = await main(event)
         console.log(ev)
-        return ev;
+        return new Response("worked");
     } catch (e) {
         // debug err on failure
         return new Response(e.stack || e.message || e || "unknown error", {

@@ -6,8 +6,9 @@ extern crate web_sys;
 extern crate futures;
 extern crate serde;
 extern crate serde_json;
-extern crate crypto;
+extern crate sha2;
 extern crate url;
+extern crate getrandom;
 
 mod utils;
 mod kv;
@@ -17,15 +18,8 @@ mod route;
 mod hrdb;
 
 use hrdb::HRDB;
-use url::Url;
-use route::Route;
-use logger::log;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::JsFuture;
-use wasm_bindgen_futures::future_to_promise;
-use js_sys::Promise;
 use web_sys::FetchEvent;
-use futures::Future;
 
 // main should act as the interface between rust and js
 // i.e. no other modules shouldn't have to care about js_sys, etc.
@@ -34,24 +28,13 @@ use futures::Future;
 
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
-pub async fn main(event: FetchEvent) -> Promise {
-    future_to_promise(HRDB::init());
+pub async fn main(event: FetchEvent) -> JsValue {
+    // let response = JsValue::from(&responder::html("Hello, world", 200).unwrap());
+    HRDB::init().await;
+    // let master = hrdb::Location::from("master")
+    //
+    // HRDB::edit()
 
-    // let request = event.request();
-    // let url = match Url::parse(&request.url()) {
-    //     Ok(v)  => v,
-    //     Err(e) => return Promise::reject(&e),
-    // };
-    // let route = Route::new(url.path().to_lowercase());
-    // let method = Method::new(request.method().to_lowercase());
-
-    // match (route.iter().next(), method) {
-    //     (Some("static"), Method::Get) => _, // static content, i.e. html, css, etc.
-    //     (Some("authenticate"), Method::Post) => _, // cookie management
-    //     (Some(_), Method::Get) => _, // hrdb
-    //     (Some(_), _) => _, // not allowed
-    //     (None, _) => _, // 404
-    // }
-
-    return Promise::resolve(&JsValue::from(&responder::html("Hello, world", 200).unwrap()));
+    return JsValue::from("okok")
+    // return Promise::resolve(&response);
 }

@@ -1,30 +1,31 @@
-use std::time;
-use std::mem;
+use getrandom::getrandom;
 use serde::{Serialize, Deserialize};
 use serde_json;
+use wasm_bindgen::JsValue;
 use std::collections::HashMap;
-use crypto::sha2::Sha256;
-use crypto::digest::Digest;
-use crate::kv;
+use sha2::Sha256;
+use sha2::Digest;
+use futures::Future;
+use crate::{logger::log, kv};
 
 // helper functions
 // crypto
 
 pub fn hash(string: &str) -> String {
-    let mut hasher = Sha256::new();
-    hasher.input_str(string);
-    let hex = hasher.result_str();
-    return hex;
+    Sha256::digest(string.as_bytes())
+        .iter()
+        .map(|x| format!("{:x?}", x))
+        .collect::<String>()
 }
 
-pub fn stamp() -> String {
-    hash(
-        &time::SystemTime::now()
-            .duration_since(time::UNIX_EPOCH)
-            .unwrap()
-            .as_millis()
-            .to_string()
-    )
+pub fn stamp() -> Result<String, String> {
+    let mut bytes = [0u8; 512];
+    log("heck");
+    getrandom(&mut bytes)
+        .ok().ok_or("Unable to get random data");
+    log("not again");
+    let string = unsafe { String::from_utf8_unchecked(bytes.to_vec()) };
+    Ok(hash(&string))
 }
 
 // key-value
@@ -79,10 +80,18 @@ pub async fn ensure(key: &str) -> Result<(), String> {
 pub struct HRDB; // Branch
 
 impl HRDB {
+    // exploration functions
+    // pub async fn branches() -> Result<Vec<Location>, String>
+    // pub async fn versions(location: Location) -> Result<Vec<Location>, String>
+    // pub async fn children()
+
+    // modification functions
+
     pub async fn init() -> Result<(), String> {
         let name = "hrdb";
 
         if let Ok(_) = read(name).await {
+            log("already initted");
             return Ok(())
         }
 
@@ -104,10 +113,6 @@ impl HRDB {
 
         return Ok(());
     }
-
-    // pub async fn wrap<A, B>(future: impl futures::Future) -> Result<JsFuture, JsFuture> {
-    // 
-    // }
 
     pub async fn fork(from: Location, into: Location) -> Result<(), String> {
         // check that new branch is unique
@@ -287,7 +292,7 @@ impl Page {
 
     pub fn new(title: String, content: String, fields: HashMap<String, String>) -> Page {
         Page {
-            id: stamp(),
+            id: stamp().unwrap(),
             fields,
             title,
             content,
