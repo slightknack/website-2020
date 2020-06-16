@@ -22,7 +22,7 @@ pub fn stamp() -> Result<String, String> {
     let mut bytes = [0u8; 512];
     log("heck");
     getrandom(&mut bytes)
-        .ok().ok_or("Unable to get random data");
+        .ok().ok_or("Unable to get random data")?;
     log("not again");
     let string = unsafe { String::from_utf8_unchecked(bytes.to_vec()) };
     Ok(hash(&string))
@@ -81,9 +81,44 @@ pub struct HRDB; // Branch
 
 impl HRDB {
     // exploration functions
-    // pub async fn branches() -> Result<Vec<Location>, String>
-    // pub async fn versions(location: Location) -> Result<Vec<Location>, String>
-    // pub async fn children()
+    pub async fn branches() -> Result<Vec<Location>, String> {
+        Ok(
+            list("hrdb").await?
+                .iter()
+                .map(|n| Location::from_branch(n.to_owned()))
+                .collect::<Vec<Location>>()
+        )
+    }
+
+    pub async fn versions(location: Location) -> Result<Vec<Location>, String> {
+        Ok(
+            list(&location.branch()).await?
+                .iter()
+                .map(|v| Location::from_branch_and_version(location.branch(), v.to_owned()))
+                .collect::<Vec<Location>>()
+        )
+    }
+
+    pub async fn root(location: Location) -> Result<Location, String> {
+        log("entering");
+        Ok(
+            Location::from_branch_version_and_path(
+                location.branch(),
+                location.version()?,
+                vec![location.version()?],
+            )
+        )
+    }
+
+    pub async fn children(location: Location) -> Result<Vec<Location>, String> {
+        let page = Page::from(&location.end()?).await?;
+        let mut c = vec![];
+
+        for (_id, address) in page.children.into_iter() {
+            c.push(location.forward(address)?);
+        }
+        return Ok(c);
+    }
 
     // modification functions
 

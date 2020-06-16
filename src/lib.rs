@@ -17,9 +17,10 @@ mod responder;
 mod route;
 mod hrdb;
 
-use hrdb::HRDB;
+use hrdb::{Location, HRDB};
 use wasm_bindgen::prelude::*;
 use web_sys::FetchEvent;
+use logger::log;
 
 // main should act as the interface between rust and js
 // i.e. no other modules shouldn't have to care about js_sys, etc.
@@ -29,12 +30,20 @@ use web_sys::FetchEvent;
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
 pub async fn main(event: FetchEvent) -> JsValue {
-    // let response = JsValue::from(&responder::html("Hello, world", 200).unwrap());
-    HRDB::init().await;
-    // let master = hrdb::Location::from("master")
-    //
-    // HRDB::edit()
+    HRDB::init().await.unwrap();
 
-    return JsValue::from("okok")
+
+    let branches = HRDB::branches().await.unwrap();
+    let branch = branches.last().unwrap().to_owned();
+    let versions = HRDB::versions(branch).await.unwrap();
+    let version = versions.last().unwrap().to_owned();
+
+    let root = HRDB::root(version).await.unwrap();
+
+    let (title, content, fields) = &HRDB::read(&root).await.unwrap();
+
+    let response = JsValue::from(&responder::html("Hello, world", 200).unwrap());
+
+    return JsValue::from("okok");
     // return Promise::resolve(&response);
 }
