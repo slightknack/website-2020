@@ -20,10 +20,10 @@ pub fn hash(string: &str) -> String {
 
 pub fn stamp() -> Result<String, String> {
     let mut bytes = [0u8; 512];
-    log("heck");
+    // log("stamping");
     getrandom(&mut bytes)
         .ok().ok_or("Unable to get random data")?;
-    log("not again");
+    // log("stamp successful");
     let string = unsafe { String::from_utf8_unchecked(bytes.to_vec()) };
     Ok(hash(&string))
 }
@@ -100,7 +100,6 @@ impl HRDB {
     }
 
     pub async fn root(location: Location) -> Result<Location, String> {
-        log("entering");
         Ok(
             Location::from_branch_version_and_path(
                 location.branch(),
@@ -126,7 +125,7 @@ impl HRDB {
         let name = "hrdb";
 
         if let Ok(_) = read(name).await {
-            log("already initted");
+            // log("already initted");
             return Ok(())
         }
 
@@ -198,8 +197,11 @@ impl HRDB {
             child   = page;
         }
 
-        // push the updated root version onto the branch tree
-        push(&location.branch(), address).await?;
+        // push the updated root version onto the branch tree if there was an update.
+        if address != head {
+            push(&location.branch(), address).await?;
+        }
+
         return Ok(());
     }
 

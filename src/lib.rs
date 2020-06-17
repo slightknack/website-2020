@@ -19,6 +19,7 @@ mod hrdb;
 
 use hrdb::{Location, HRDB};
 use wasm_bindgen::prelude::*;
+use js_sys::Promise;
 use web_sys::FetchEvent;
 use logger::log;
 
@@ -29,21 +30,25 @@ use logger::log;
 
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
-pub async fn main(event: FetchEvent) -> JsValue {
+pub async fn main(event: FetchEvent) -> Promise {
     HRDB::init().await.unwrap();
-
 
     let branches = HRDB::branches().await.unwrap();
     let branch = branches.last().unwrap().to_owned();
+
     let versions = HRDB::versions(branch).await.unwrap();
     let version = versions.last().unwrap().to_owned();
 
     let root = HRDB::root(version).await.unwrap();
+    let (title, content, fields) = HRDB::read(&root).await.unwrap();
+    // let new_content = "My friend ( ͡° ͜ʖ ͡°) says that the website is close to being functional.";
+    // HRDB::edit(
+    //     root,
+    //     Some(title),
+    //     Some(new_content.to_string()),
+    //     Some(fields),
+    // ).await.unwrap();
 
-    let (title, content, fields) = &HRDB::read(&root).await.unwrap();
-
-    let response = JsValue::from(&responder::html("Hello, world", 200).unwrap());
-
-    return JsValue::from("okok");
-    // return Promise::resolve(&response);
+    let response = JsValue::from(&responder::html(&content, 200).unwrap());
+    return Promise::resolve(&response);
 }
