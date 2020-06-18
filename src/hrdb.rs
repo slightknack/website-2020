@@ -1,11 +1,10 @@
-use getrandom::getrandom;
 use serde::{Serialize, Deserialize};
 use serde_json;
-use wasm_bindgen::JsValue;
+use js_sys::Date;
+use js_sys::Math;
 use std::collections::HashMap;
 use sha2::Sha256;
 use sha2::Digest;
-use futures::Future;
 use crate::{logger::log, kv};
 
 // helper functions
@@ -19,13 +18,9 @@ pub fn hash(string: &str) -> String {
 }
 
 pub fn stamp() -> Result<String, String> {
-    let mut bytes = [0u8; 512];
-    // log("stamping");
-    getrandom(&mut bytes)
-        .ok().ok_or("Unable to get random data")?;
-    // log("stamp successful");
-    let string = unsafe { String::from_utf8_unchecked(bytes.to_vec()) };
-    Ok(hash(&string))
+    let stream = (0..32).map(|_| Math::random().to_string()).collect::<Vec<String>>().join("");
+    let pre_stamp = Date::now().to_string() + &stream;
+    Ok(hash(&pre_stamp))
 }
 
 // key-value
@@ -43,6 +38,11 @@ pub async fn read(key: &str) -> Result<String, String> {
         .as_string().ok_or("Could not convert to String".to_owned())
 }
 
+pub async fn mutate(key: &str, value: &str) -> Result<(), String> {
+    kv::value(kv::AddressedNS::put(key, value))
+        .await.ok_or("Could not mutate kv")?;
+    return Ok(());
+}
 
 pub async fn append(key: &str, value: Vec<String>) -> Result<(), String> {
     let contents = read(key).await? + "\n" + &value.join("\n");
@@ -84,8 +84,8 @@ impl HRDB {
     pub async fn branches() -> Result<Vec<Location>, String> {
         Ok(
             list("hrdb").await?
-                .iter()
-                .map(|n| Location::from_branch(n.to_owned()))
+                .into_iter()
+                .map(|n| Location::from_branch(n))
                 .collect::<Vec<Location>>()
         )
     }
@@ -93,13 +93,13 @@ impl HRDB {
     pub async fn versions(location: Location) -> Result<Vec<Location>, String> {
         Ok(
             list(&location.branch()).await?
-                .iter()
-                .map(|v| Location::from_branch_and_version(location.branch(), v.to_owned()))
+                .into_iter()
+                .map(|v| Location::from_branch_and_version(location.branch(), v))
                 .collect::<Vec<Location>>()
         )
     }
 
-    pub async fn root(location: Location) -> Result<Location, String> {
+    pub fn root(location: Location) -> Result<Location, String> {
         Ok(
             Location::from_branch_version_and_path(
                 location.branch(),
@@ -119,29 +119,67 @@ impl HRDB {
         return Ok(c);
     }
 
+    pub async fn locate_id(version: Location, id: String) -> Result<Location, String> {
+        // breadth-first search
+        let mut queue = vec![HRDB::root(version)?];
+
+        while !queue.is_empty() {
+            let location = queue.pop().unwrap();
+            let top = location.end()?;
+            let page = Page::from(&top).await?;
+            if page.id == id {
+                return Ok(location);
+            }
+            for (id, address) in page.children {
+                queue.push(location.forward(address)?)
+            }
+        }
+
+        return Err("Could not locate a Page with that id for this version".to_owned());
+    }
+
+    pub async fn locate(version: Location, ids: Vec<String>) -> Result<Location, String> {
+        let mut location = HRDB::root(version)?;
+
+        for id in ids[1..].iter() {
+            let top = location.end()?;
+            let page = Page::from(&top).await?;
+            location = location.forward(
+                page.children.get(id)
+                    .ok_or("Page does not have child with that id")?
+                    .to_owned()
+            )?;
+        }
+
+        return Ok(location);
+    }
+
     // modification functions
 
     pub async fn init() -> Result<(), String> {
-        let name = "hrdb";
-
-        if let Ok(_) = read(name).await {
-            // log("already initted");
+        if let Ok(_) = read("hrdb").await {
+            log("aleady initted");
             return Ok(())
+        } else {
+            log("initting now")
         }
 
         let content = Content::new("My friend ( ͡° ͜ʖ ͡°) would like you to check back soon.".to_owned());
         let address = write(&content.to_string()).await?;
 
         let root = Page::new(
-            "Currently a Work in Progress...".to_owned(),
+            "Home".to_owned(),
             address,
             HashMap::new(),
         );
         let version = write(&root.to_string()?).await?;
 
-        ensure("master").await?;
-        push("master", version).await?;
+        let mut table = HashMap::new();
+        table.insert(root.short(), vec![root.id]);
+        Shorthand::wrap(table).write().await?;
 
+        ensure("master").await?;
+        push("master", version.clone()).await?;
         ensure("hrdb").await?;
         push("hrdb", "master".to_owned()).await?;
 
@@ -173,9 +211,14 @@ impl HRDB {
         // check that this commit is being applied to the head
         let head    = Branch::from(&location.branch()).await?.head()?;
         let version = location.version()?;
-
         if version != head {
             return Err("Can only create Page on latest version of Branch".to_owned());
+        }
+
+        if location.branch() == "master" {
+            let mut ids = location.ids().await?;
+            ids.push(updated.id.clone());
+            Shorthand::update(updated.short(), ids).await?;
         }
 
         // get the new address of the page that has been updated
@@ -197,7 +240,7 @@ impl HRDB {
             child   = page;
         }
 
-        // push the updated root version onto the branch tree if there was an update.
+        // push the updated root version onto the branch tree if there was an update
         if address != head {
             push(&location.branch(), address).await?;
         }
@@ -213,12 +256,9 @@ impl HRDB {
         content: String,
         fields: HashMap<String, String>,
     ) -> Result<(), String> {
-        let new        = Page::new(title, content, fields);
-        let address    = write(&new.to_string()?).await?;
-        let mut parent = Page::from(&location.end()?).await?;
-        parent.children.insert(new.id, address);
-
-        HRDB::commit(location.back()?, parent).await?;
+        let new     = Page::new(title, content, fields);
+        let address = write(&new.to_string()?).await?;
+        HRDB::commit(location.forward(address)?, new).await?;
         return Ok(());
     }
 
@@ -235,6 +275,7 @@ impl HRDB {
         if let Some(f) = fields  { page.fields  = f }
 
         HRDB::commit(location, page).await?;
+
         return Ok(());
     }
 
@@ -346,6 +387,18 @@ impl Page {
             .ok().ok_or("Could not serialize Page")?;
         return Ok(serialized);
     }
+
+    pub fn short(&self) -> String {
+        self.title
+            .split_whitespace()
+            .map(|x| x.to_owned())
+            .collect::<Vec<String>>()
+            .join("-")
+            .chars()
+            .filter(|x| x.is_ascii_alphanumeric() || x == &'-')
+            .collect::<String>()
+            .to_lowercase()
+    }
 }
 
 struct Content(pub String);
@@ -368,7 +421,7 @@ impl Content {
 /// branch is the name of the branch,
 /// version is the hash of the root,
 /// path is a list of checksums.
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Location((String, Option<(String, Option<Vec<String>>)>));
 
 impl Location {
@@ -432,5 +485,50 @@ impl Location {
                 .ok_or("Path has no addresses")?
                 .to_string()
         )
+    }
+
+    pub async fn ids(&self) -> Result<Vec<String>, String> {
+        let mut ids = vec![];
+        for a in self.path()?.iter() {
+            let page = Page::from(a).await?;
+            ids.push(page.id);
+        }
+        return Ok(ids);
+    }
+}
+
+/// `Shorthand` maps name to a list of ids which can be used to create a `Location`.
+#[derive(Serialize, Deserialize)]
+pub struct Shorthand(HashMap<String, Vec<String>>);
+
+impl Shorthand {
+    pub async fn read() -> Result<Shorthand, String> {
+        serde_json::from_str(&read("shorthand").await?)
+            .ok().ok_or("Could not deserialize Shorthand".to_owned())
+    }
+
+    pub fn wrap(map: HashMap<String, Vec<String>>) -> Shorthand {
+        Shorthand(map)
+    }
+
+    pub fn unwrap(self) -> HashMap<String, Vec<String>> {
+        self.0
+    }
+
+    pub fn to_string(&self) -> Result<String, String> {
+        let serialized = serde_json::to_string_pretty(self)
+            .ok().ok_or("Could not serialize Shorthand")?;
+        return Ok(serialized);
+    }
+
+    pub async fn write(&self) -> Result<(), String> {
+        mutate("shorthand", &self.to_string()?).await
+    }
+
+    pub async fn update(name: String, ids: Vec<String>) -> Result<(), String> {
+        let mut table = Shorthand::read().await?.unwrap();
+        table.insert(name, ids);
+        Shorthand::wrap(table).write().await?;
+        return Ok(());
     }
 }
