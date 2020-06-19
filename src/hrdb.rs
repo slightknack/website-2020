@@ -33,7 +33,8 @@ pub async fn write(value: &str) -> Result<String, String> {
 }
 
 pub async fn read(key: &str) -> Result<String, String> {
-    kv::value(kv::AddressedNS::get(key, "text"))
+    let x = kv::AddressedNS::get(key, "text");
+    kv::value(x)
         .await.ok_or("Could not read from kv")?
         .as_string().ok_or("Could not convert to String".to_owned())
 }
@@ -140,6 +141,7 @@ impl HRDB {
 
     pub async fn locate(version: Location, ids: Vec<String>) -> Result<Location, String> {
         let mut location = HRDB::root(version)?;
+        log(&format!("ids: {:?}", ids));
 
         for id in ids[1..].iter() {
             let top = location.end()?;
@@ -158,10 +160,7 @@ impl HRDB {
 
     pub async fn init() -> Result<(), String> {
         if let Ok(_) = read("hrdb").await {
-            log("aleady initted");
-            return Ok(())
-        } else {
-            log("initting now")
+            return Ok(());
         }
 
         let content = Content::new("My friend ( ͡° ͜ʖ ͡°) would like you to check back soon.".to_owned());
@@ -217,7 +216,6 @@ impl HRDB {
 
         if location.branch() == "master" {
             let mut ids = location.ids().await?;
-            ids.push(updated.id.clone());
             Shorthand::update(updated.short(), ids).await?;
         }
 
@@ -493,6 +491,7 @@ impl Location {
             let page = Page::from(a).await?;
             ids.push(page.id);
         }
+
         return Ok(ids);
     }
 }

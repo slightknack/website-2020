@@ -8,6 +8,8 @@
 !/src/**
 !/worker
 !/worker/worker.js
+!/static
+!/static/**
 
 # The README
 !README.md

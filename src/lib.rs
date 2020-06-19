@@ -35,7 +35,24 @@ use route::Route;
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
 pub async fn main(event: FetchEvent) -> Promise {
-    HRDB::init().await.unwrap();
+    let r = HRDB::init().await;
+    let mut location = Location::from_branch("master".to_owned());
+    location = HRDB::versions(location).await.unwrap().last().unwrap().to_owned();
+    location = HRDB::root(location).unwrap();
+
+    HRDB::edit(
+        location,
+        None,
+        Some(
+            "#Hello!\nMy friend ( ͡° ͜ʖ ͡°) would like *you* to check back soon. It's **almost done**.".to_owned()
+        ),
+        None,
+    ).await.unwrap();
+
+    if let Err(e) = r {
+        let r = responder::html(&format!("<h1>Error</h1><p>{}</p>", e), 500).unwrap();
+        return Promise::resolve(&JsValue::from(r));
+    }
 
     let request = event.request();
     let url = match Url::parse(&request.url()) {
@@ -47,8 +64,8 @@ pub async fn main(event: FetchEvent) -> Promise {
     //
     // // construct route from event
     // // match against route
-    log("generating response for:");
-    log(url.path());
+    // log("generating response for:");
+    // log(url.path());
     let response = respond(path).await;
 
     // if the response failed, we return an internal server error

@@ -33,7 +33,7 @@ pub async fn page(title: String, content: String) -> Result<String, String> {
     // flesh them out
     let page_filler = PageFiller { title: title.clone(), content };
     let page_rendered = page.render(&page_filler);
-    let base_filler = BaseFiller { title: title + "- Isaac Clayton", content: page_rendered };
+    let base_filler = BaseFiller { title: title + "—Isaac Clayton", content: page_rendered };
     let base_rendered = base.render(&base_filler);
     return Ok(base_rendered);
 }
