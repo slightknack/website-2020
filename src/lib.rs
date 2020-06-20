@@ -19,6 +19,7 @@ mod route;
 mod hrdb;
 mod template;
 
+use std::usize;
 use hrdb::{Location, HRDB, Shorthand};
 use wasm_bindgen::prelude::*;
 use js_sys::Promise;
@@ -35,24 +36,7 @@ use route::Route;
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
 pub async fn main(event: FetchEvent) -> Promise {
-    let r = HRDB::init().await;
-    let mut location = Location::from_branch("master".to_owned());
-    location = HRDB::versions(location).await.unwrap().last().unwrap().to_owned();
-    location = HRDB::root(location).unwrap();
-
-    HRDB::edit(
-        location,
-        None,
-        Some(
-            "#Hello!\nMy friend ( ͡° ͜ʖ ͡°) would like *you* to check back soon. It's **almost done**.".to_owned()
-        ),
-        None,
-    ).await.unwrap();
-
-    if let Err(e) = r {
-        let r = responder::html(&format!("<h1>Error</h1><p>{}</p>", e), 500).unwrap();
-        return Promise::resolve(&JsValue::from(r));
-    }
+    // let r = HRDB::init().await;
 
     let request = event.request();
     let url = match Url::parse(&request.url()) {
@@ -60,18 +44,13 @@ pub async fn main(event: FetchEvent) -> Promise {
         Err(_) => return Promise::reject(&JsValue::from("Could not parse url")),
     };
     let path = Route::new(&url.path().to_lowercase());
-    // // let method = request.method().to_lowercase();
-    //
-    // // construct route from event
-    // // match against route
-    // log("generating response for:");
-    // log(url.path());
     let response = respond(path).await;
 
     // if the response failed, we return an internal server error
     return match response {
         Ok(response) => Promise::resolve(&JsValue::from(response)),
         Err(e) => {
+            // need to make an Error (404, 500, etc) page.
             let r = responder::html(&format!("<h1>Error</h1><p>{}</p>", e), 500).unwrap();
             Promise::resolve(&JsValue::from(r))
         },
@@ -105,14 +84,46 @@ pub async fn respond(path: Route) -> Result<Response, String> {
             Ok(response)
         },
 
-        // perma -> look up permalink
-        Some(p) if p == "perma" => todo!(),
+        // edit -> load the editor
+        Some(e) if e == "edit" => Err("Editing is not yet implemented".to_owned()),
 
-        // loc -> direct hrdb query
-        Some(l) if l == "loc" => todo!(),
+        // perma -> direct hrdb query '/branch/version_no/id'
+        Some(p) if p == "perma" => {
+            let (b, vn, id) = (
+                path.iter().nth(1).ok_or("No branch specified")?,
+                path.iter().nth(2).ok_or("No version number specified")?,
+                path.iter().nth(3).ok_or("No id specified")?,
+            );
+
+            let branch = Location::from_branch(b.to_owned());
+            let ver_no = vn.parse::<usize>()
+                .ok().ok_or("Version number was not a number")?;
+            let versions = HRDB::versions(branch).await?;
+            let version = versions.iter()
+                .nth(ver_no).ok_or("Version with that number does not exist")?;
+            // locate_id fairly expensive, might revise schema...
+            let location = HRDB::locate_id(version.to_owned(), id.to_owned()).await?;
+
+            let (title, content, _) = HRDB::read(&location).await?;
+            let html = template::page(
+                title,
+                content,
+                b.to_owned(),
+                ver_no,
+                id.to_owned(),
+            ).await?;
+            responder::html(&html, 200)
+                .ok_or("Could not generate response for location query".to_owned())
+        }
 
         // search -> search master for query
-        Some(s) if s == "search" => todo!(),
+        Some(s) if s == "search" => Err("Searching is not yet implemented".to_owned()),
+
+        // branches -> list all branches
+        Some(b) if b == "branches" => Err("Listing branches is not yet implemented".to_owned()),
+
+        // versions -> list all versions
+        Some(v) if v == "versions" => Err("Listing versions is not yet implemented".to_owned()),
 
         // otherwise -> call out to create hrdb query
         Some(short) => responder::html(&query(short.to_owned()).await?, 200)
@@ -131,14 +142,22 @@ pub async fn query(short: String) -> Result<String, String> {
 
     // find and load the page location
     let master = Location::from_branch("master".to_owned());
-    let head = HRDB::versions(master).await?.last()
+    let versions = HRDB::versions(master).await?;
+    let head = versions.last()
         .ok_or("No versions found")?
         .to_owned();
-    let location = HRDB::locate(head, ids).await?;
+    let ver_no = versions.len() - 1;
+    let location = HRDB::locate(head, ids.clone()).await?;
     let (title, content, _) = HRDB::read(&location).await?;
 
     // render the page
-    return template::page(title, content).await;
+    return template::page(
+        title,
+        content,
+        location.branch(),
+        ver_no,
+        ids.last().ok_or("No id exists")?.to_owned(),
+    ).await;
 }
 
 // HRDB::init().await.unwrap();

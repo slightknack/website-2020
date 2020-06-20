@@ -7,6 +7,9 @@ struct PageFiller {
     title: String,
     #[md]
     content: String,
+    branch: String,
+    ver_no: usize,
+    id: String,
 }
 
 #[derive(Content)]
@@ -23,7 +26,13 @@ pub async fn asset(name: &str) -> Result<String, String> {
     )
 }
 
-pub async fn page(title: String, content: String) -> Result<String, String> {
+pub async fn page(
+    title: String,
+    content: String,
+    branch: String,
+    ver_no: usize,
+    id: String,
+) -> Result<String, String> {
     // get the templates
     let base = Template::new(asset("base.html").await?)
         .ok().ok_or("Could not create base template")?;
@@ -31,7 +40,7 @@ pub async fn page(title: String, content: String) -> Result<String, String> {
         .ok().ok_or("Could not create page template")?;
 
     // flesh them out
-    let page_filler = PageFiller { title: title.clone(), content };
+    let page_filler = PageFiller { title: title.clone(), content, branch, ver_no, id };
     let page_rendered = page.render(&page_filler);
     let base_filler = BaseFiller { title: title + "—Isaac Clayton", content: page_rendered };
     let base_rendered = base.render(&base_filler);

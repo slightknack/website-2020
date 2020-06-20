@@ -1,0 +1,18 @@
+<div class="edit">
+    <link rel="stylesheet" href="/static/code.css">
+    <script src="https://codemirror.net/lib/codemirror.js"></script>
+    <script src="https://codemirror.net/mode/markdown/markdown.js"></script>
+
+    <form id="document">
+        <textarea id="editor">{{{ old }}}</textarea>
+        <input type="submit">
+    </form>
+
+    <script>
+        var editor = document.getElementById("editor");
+        var mirror = CodeMirror.fromTextArea(editor, {
+            lineNumbers: true,
+            mode: "markdown",
+        });
+    </script>
+</div>

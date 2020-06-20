@@ -531,3 +531,5 @@ impl Shorthand {
         return Ok(());
     }
 }
+
+// perma maps partial id to id
