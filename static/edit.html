@@ -1,11 +1,12 @@
 <div class="edit">
-    <link rel="stylesheet" href="/static/code.css">
     <script src="https://codemirror.net/lib/codemirror.js"></script>
     <script src="https://codemirror.net/mode/markdown/markdown.js"></script>
 
+    <h1 class="title">{{ title }}</h1>
+
     <form id="document">
         <textarea id="editor">{{{ old }}}</textarea>
-        <input type="submit">
+        <input type="submit" value="Commit">
     </form>
 
     <script>

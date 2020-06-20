@@ -64,28 +64,51 @@ pub async fn respond(path: Route) -> Result<Response, String> {
             .ok_or("Could not redirect".to_owned()),
 
         // static -> retrieve a static asset
-        Some(s) if s == "static"  => {
+        Some(s) if s == "static" => {
             let file = path.iter().nth(1).ok_or("Static request has no asset")?;
             let split = file
                 .split(".")
                 .map(|x| x.to_owned())
                 .collect::<Vec<String>>();
+
+            log(&format!("getting {:?}", file));
+
             let (_, kind) = (
                 split.iter().nth(0).ok_or("Asset is not a file")?,
                 split.iter().nth(1).ok_or("Asset has no extension")?,
             );
+
             let content = template::asset(file).await?;
+
+            log(&format!("{:?} content", file));
+
             let response = match kind {
                 h if h == "html" => responder::html(&content, 200),
                 c if c == "css"  => responder::css(&content, 200),
                 _                => responder::plain(&content, 200),
             }.ok_or("Could not generate static response")?;
 
+            log(&format!("generated response for {:?}", file));
+
             Ok(response)
         },
 
-        // edit -> load the editor
-        Some(e) if e == "edit" => Err("Editing is not yet implemented".to_owned()),
+        // edit -> load the editor '/branch/id'
+        Some(e) if e == "edit" => {
+            let (b, id) = (
+                path.iter().nth(1).ok_or("No branch specified")?,
+                path.iter().nth(2).ok_or("No id specified")?,
+            );
+            let branch = Location::from_branch(b.to_owned());
+            let versions = HRDB::versions(branch).await?;
+            let head = versions.last().ok_or("No versions exist on this branch")?;
+            let location = HRDB::locate_id(head.to_owned(), id.to_owned()).await?;
+            let (title, content, _) = HRDB::read(&location).await?;
+
+            let html = template::edit(title, content).await?;
+            responder::html(&html, 200)
+                .ok_or("Could not load editor".to_owned())
+        },
 
         // perma -> direct hrdb query '/branch/version_no/id'
         Some(p) if p == "perma" => {
@@ -159,24 +182,3 @@ pub async fn query(short: String) -> Result<String, String> {
         ids.last().ok_or("No id exists")?.to_owned(),
     ).await;
 }
-
-// HRDB::init().await.unwrap();
-//
-// let branches = HRDB::branches().await.unwrap();
-// let branch = branches.last().unwrap().to_owned();
-//
-// let versions = HRDB::versions(branch).await.unwrap();
-// let version = versions.last().unwrap().to_owned();
-//
-// let root = HRDB::root(version).await.unwrap();
-// let (title, content, fields) = HRDB::read(&root).await.unwrap();
-// // let new_content = "My friend ( ͡° ͜ʖ ͡°) says that the website is close to being functional.";
-// // HRDB::edit(
-// //     root,
-// //     Some(title),
-// //     Some(new_content.to_string()),
-// //     Some(fields),
-// // ).await.unwrap();
-//
-// let response = JsValue::from(&responder::html(&content, 200).unwrap());
-// return Promise::resolve(&response);

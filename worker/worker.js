@@ -20,5 +20,5 @@ async function handleEvent(event) {
         return new Response(e.stack || e.message || e || "unknown error", {
             status: 500
         });
-  }
+    }
 }
