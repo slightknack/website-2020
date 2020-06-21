@@ -1,0 +1,21 @@
+<div class="page">
+    <h1 class="title">{{ title }}</h1>
+    <table>
+        <thead>
+            <tr>
+            {{ #columns }}
+                <th>{{ item }}</th>
+            {{ /columns }}
+            </tr>
+        </thead>
+        <tbody>
+        {{ #rows }}
+            <tr>
+            {{ #items }}
+                <td>{{ item }}</td>
+            {{ /items }}
+            </tr>
+        {{ /rows }}
+        </tbody>
+    </table>
+</div>

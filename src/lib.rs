@@ -71,15 +71,14 @@ pub async fn respond(path: Route) -> Result<Response, String> {
                 .map(|x| x.to_owned())
                 .collect::<Vec<String>>();
 
-            log(&format!("getting {:?}", file));
-
             let (_, kind) = (
                 split.iter().nth(0).ok_or("Asset is not a file")?,
                 split.iter().nth(1).ok_or("Asset has no extension")?,
             );
 
+            // TODO: fix annoying cloudflare css bug
+            log(&format!("getting {:?}", file));
             let content = template::asset(file).await?;
-
             log(&format!("{:?} content", file));
 
             let response = match kind {
@@ -87,9 +86,6 @@ pub async fn respond(path: Route) -> Result<Response, String> {
                 c if c == "css"  => responder::css(&content, 200),
                 _                => responder::plain(&content, 200),
             }.ok_or("Could not generate static response")?;
-
-            log(&format!("generated response for {:?}", file));
-
             Ok(response)
         },
 
@@ -143,7 +139,22 @@ pub async fn respond(path: Route) -> Result<Response, String> {
         Some(s) if s == "search" => Err("Searching is not yet implemented".to_owned()),
 
         // branches -> list all branches
-        Some(b) if b == "branches" => Err("Listing branches is not yet implemented".to_owned()),
+        Some(b) if b == "branches" => {
+            let branches = HRDB::branches().await?;
+            let names = branches.iter()
+                .map(|l| vec![l.branch()])
+                .collect::<Vec<Vec<String>>>();
+
+            let html = template::table(
+                "Branches".to_owned(),
+                vec!["Name".to_owned()],
+                names,
+            ).await?;
+            responder::html(&html, 200)
+                .ok_or("Could not generate response listing branches".to_owned())
+        }
+
+        // Err("Listing branches is not yet implemented".to_owned()),
 
         // versions -> list all versions
         Some(v) if v == "versions" => Err("Listing versions is not yet implemented".to_owned()),

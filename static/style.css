@@ -4,23 +4,51 @@ body {
     font-family: "Spectral", serif;
     font-size: calc(10px + 1.6vh);
     line-height: 1.3;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    scroll-behavior: smooth;
 }
 
-.page {
-    padding-left: 2vh;
+nav {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    top: 0;
+    margin: 0;
     padding-right: 2vh;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: calc(400px + 30vh);
-}
-
-.edit {
     padding-left: 2vh;
-    padding-right: 2vh;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: calc(400px + 30vh);
+    background-color: #15aacc;
+    color: #fff;
     height: 100vh;
+    overflow: auto;
+}
+
+@media only screen and (max-width: 400px) {
+    body {
+        display: block;
+    }
+
+    .navbar {
+        position: -webkit-sticky; /* Safari */
+        position: sticky;
+    }
+
+    nav {
+        height: auto;
+    }
+}
+
+.content {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.page, .edit {
+    padding-left: 2vh;
+    padding-right: 2vh;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: calc(400px + 30vh);
 }
 
 p {
@@ -66,7 +94,7 @@ pre {
 }
 
 code {
-    font-size: 0.9em !important;
+    font-size: 0.9em;
     white-space: nowrap;
     background-color: #ddd;
     font-family: "Fira Mono", monospace;
@@ -126,11 +154,11 @@ a {
 a:after {
     content: " ❃";
     /* font-weight: bold; */
-    color: #e00;
+    color: #1544cc;
 }
 
 a:visited:after {
-    color: #e88;
+    color: #15aacc;
 }
 
 a:hover {
@@ -138,7 +166,17 @@ a:hover {
 }
 
 a:active {
-    background-image: linear-gradient(120deg, #e88 0%, #e88 100%);
+    background-image: linear-gradient(120deg, #15aacc 0%, #15aacc 100%);
+}
+
+.navlink {
+    background-color: #ffffff00;
+    padding: 0;
+    border-radius: 0;
+}
+
+.navlink:after {
+    content: "";
 }
 
 button, input[type="submit"], input[type="reset"] {
@@ -152,12 +190,12 @@ button, input[type="submit"], input[type="reset"] {
     letter-spacing: 0.05em;
     font-family: "Spectral SC", serif;
     color: white;
-    background-color: #e00;
+    background-color: #1544cc;
     transition: background-color 0.125s ease-in-out;
 }
 
 button:active, input[type=submit]:active, input[type="reset"]:active {
-    background-color: #e88;
+    background-color: #15aacc;
 }
 
 em {
