@@ -3,19 +3,25 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <meta name="description" content="{{ title }}" />
         <link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset.css">
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Fira+Mono&family=Spectral+SC:wght@400;700&family=Spectral:ital,wght@0,400;0,700;1,400&display=swap" >
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <link rel="stylesheet" href="/static/style.css">
         <!-- <link rel="stylesheet" href="/static/code.css"> -->
-        <title>{{ title }}</title>
-        <!-- <script>
+        <!-- <script src="/static/turbo.js">
             var Turbolinks = require("turbolinks")
             Turbolinks.start()
         </script> -->
+        <title>{{ title }}</title>
     </head>
     <body>
         <div class="navbar">
             <nav>
-                <a href="/home" class="navlink"><h1 class="title">❃</h1></a>
+                <a class="icon" href="/home"><span class="material-icons">home</span></a>
+                <a class="icon"><span class="material-icons">menu</span></a>
+                <a class="icon"><span class="material-icons">arrow_back</span></a>
             </nav>
             <!-- Not much for now... -->
         </div>
