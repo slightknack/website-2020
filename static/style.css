@@ -13,20 +13,19 @@ nav {
     position: sticky;
     top: 0;
     margin: 0;
-    padding: 2vh;
+    padding: 3vh;
     background-color: #1544cc;
     color: #fff;
-    height: calc(100vh - 4vh);
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    overflow: auto;
+    height: calc(100vh - 6vh);
+    flex-grow: 0;
 }
 
-nav > * {
-    display: flex;
-    margin: 0;
-    margin-bottom: 2vh;
+.hidden {
+    display: none;
+}
+
+.shown {
+    display: block;
 }
 
 @media only screen and (max-width: 512px) {
@@ -35,14 +34,14 @@ nav > * {
     }
 
     nav {
+        min-width: 0;
+        max-width: none;
         height: auto;
-        width: calc(100vw - 4vh);
-        flex-direction: row;
+        width: calc(100vw - 6vh);
     }
 
-    nav > * {
-        margin: 0;
-        margin-right: 2vh;
+    .iconlist > li {
+        display: inline-block !important;
     }
 }
 
@@ -52,8 +51,8 @@ nav > * {
 }
 
 .page, .edit {
-    padding-left: 2vh;
-    padding-right: 2vh;
+    padding-left: 3vh;
+    padding-right: 3vh;
     margin-left: auto;
     margin-right: auto;
     max-width: calc(256px + 50vh);
@@ -138,6 +137,16 @@ ol {
     list-style: decimal outside none;
 }
 
+.navlist,
+.iconlist {
+    list-style: none;
+    padding: 0;
+}
+
+.iconlist > li {
+    display: block;
+}
+
 hr {
     margin-top: 2vh;
     margin-bottom: 2vh;
@@ -147,22 +156,19 @@ hr {
 
 a {
     color: inherit;
-    letter-spacing: 0.05em;
-    font-family: "Spectral SC", serif;
     text-decoration: none;
     background-image: linear-gradient(120deg, #ddd 0%, #ddd 100%);
     background-size: 0 100%;
     background-repeat: no-repeat;
     background-position: 0 100%;
-    transition: background-size 0.125s ease-in-out;
+    transition: background-size 0.125s ease-in-out, color 0.125s ease-in-out;
     padding: 2pt;
     border-radius: 2pt;
 }
 
 a:after {
-    content: " ❃";
-    /* font-weight: bold; */
-    color: #1544cc;
+    content: " ❃";
+    padding-right: 2pt;
 }
 
 a:visited:after {
@@ -171,10 +177,11 @@ a:visited:after {
 
 a:hover {
     background-size: 100% 100%;
+    color: #1544cc;
 }
 
 a:active {
-    background-color: #15aacc;
+    background-color: #1544cc;
 }
 
 .icon {
@@ -182,7 +189,8 @@ a:active {
 }
 
 .icon:after {
-    content: "";
+    content: none;
+    padding-right: 0;
 }
 
 .icon:active {
@@ -190,14 +198,28 @@ a:active {
     background: none;
 }
 
+.icon > * {
+    background-image: linear-gradient(120deg, #ddd 0%, #ddd 100%);
+    background-size: 0 100%;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size 0.125s ease-in-out, color 0.125s ease-in-out;
+}
+
+.icon > *:hover {
+    background-size: 100% 100%;
+    color: #1544cc;
+}
+
 .icon > *:active {
-    background-color: #15aacc;
+    background-color: #1544cc;
 }
 
 .material-icons {
     font-size: inherit !important;
     padding: 2pt;
     border-radius: 2pt;
+    vertical-align: top;
 }
 
 button, input[type="submit"], input[type="reset"] {
@@ -224,7 +246,8 @@ em {
 }
 
 strong {
-    font-weight: bold;
+    letter-spacing: 0.05em;
+    font-family: "Spectral SC", serif;
 }
 
 img {

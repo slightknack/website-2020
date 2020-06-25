@@ -45,7 +45,7 @@ pub async fn page(
     // flesh them out
     let page_filler = PageFiller { title: title.clone(), content, branch, ver_no, id, parent };
     let page_rendered = page.render(&page_filler);
-    let base_filler = BaseFiller { title: title + " — Isaac Clayton", content: page_rendered };
+    let base_filler = BaseFiller { title: title, content: page_rendered };
     let base_rendered = base.render(&base_filler);
     return Ok(base_rendered);
 }
@@ -70,7 +70,7 @@ pub async fn edit(
     let edit_filler = EditFiller { title: title.clone(), old };
     let edit_rendered = edit.render(&edit_filler);
     let base_filler = BaseFiller {
-        title: "Editing — ".to_owned() + &title + " — Isaac Clayton",
+        title: "Editing — ".to_owned() + &title,
         content: edit_rendered
     };
     let base_rendered = base.render(&base_filler);
@@ -123,7 +123,7 @@ pub async fn table(
     log(&format!("table {:?}", table_filler));
     let table_rendered = table.render(&table_filler);
     let base_filler = BaseFiller {
-        title: "Listing ".to_owned() + &title + " — Isaac Clayton",
+        title: "Listing ".to_owned() + &title,
         content: table_rendered,
     };
     let base_rendered = base.render(&base_filler);
@@ -144,7 +144,7 @@ pub async fn error(message: String) -> Result<String, String> {
     let error_filler = ErrorFiller { message };
     let error_rendered = error.render(&error_filler);
     let base_filler = BaseFiller {
-        title: "Error".to_owned() + " — Isaac Clayton",
+        title: "Error".to_owned(),
         content: error_rendered,
     };
     let base_rendered = base.render(&base_filler);

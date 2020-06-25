@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <meta name="description" content="{{ title }}" />
+        <meta name="description" content="{{ title }} — Isaac Clayton" />
         <link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset.css">
         <link rel="stylesheet"
               href="https://fonts.googleapis.com/css2?family=Fira+Mono&family=Spectral+SC:wght@400;700&family=Spectral:ital,wght@0,400;0,700;1,400&display=swap" >
@@ -19,8 +19,41 @@
     <body>
         <div class="navbar">
             <nav>
-                <a class="icon" href="/home"><span class="material-icons">home</span></a>
-                <a class="icon"><span class="material-icons">menu</span></a>
+                <ul class="iconlist">
+                    <li><a class="icon" href="/home"><span class="material-icons">home</span></a></li>
+                    <li><a class="icon" onclick="menuToggle()"><span id="toggle" class="material-icons">menu</span></a></li>
+                </ul>
+                <div id="menu" class="hidden">
+                    <h1>{{ title }}</h1>
+                    <ul>
+                        {{ #children }}
+                        <li><a href="/perma/{{ver_no}}/{{id}}">{{ name }}</a></li>
+                        {{ /children }}
+                    </ul>
+                    <h2>Actions</h2>
+                    <ul class="navlist">
+                        {{ #actions }}
+                        <li>
+                            <span class="material-icons">{{ icon_name }}</span>
+                            <a href="{{link}}">{{ name }}</a>
+                        </li>
+                        {{ /actions }}
+                    </ul>
+                </div>
+                <script>
+                    function menuToggle() {
+                        var toggle = document.getElementById("toggle")
+                        var menu   = document.getElementById("menu")
+
+                        if (toggle.innerHTML === "close") {
+                            toggle.innerHTML = "menu"
+                            menu.className = "hidden"
+                        } else {
+                            toggle.innerHTML = "close"
+                            menu.className = "shown"
+                        }
+                    }
+                </script>
             </nav>
             <!-- Not much for now... -->
         </div>
