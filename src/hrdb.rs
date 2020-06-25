@@ -36,7 +36,7 @@ pub async fn read(key: &str) -> Result<String, String> {
     let x = kv::AddressedNS::get(key, "text");
     kv::value(x)
         .await.ok_or("Could not read from kv")?
-        .as_string().ok_or("Could not convert to String".to_owned())
+        .as_string().ok_or("Could not convert kv-read value to String".to_owned())
 }
 
 pub async fn mutate(key: &str, value: &str) -> Result<(), String> {
@@ -72,7 +72,7 @@ pub async fn ensure(key: &str) -> Result<(), String> {
         return Ok(());
     }
     kv::value(kv::AddressedNS::put(&key, ""))
-        .await.ok_or("Could not create new empty list")?;
+        .await.ok_or("Could not kv-create new empty list")?;
     return Ok(());
 }
 
@@ -148,7 +148,7 @@ impl HRDB {
             let page = Page::from(&top).await?;
             location = location.forward(
                 page.children.get(id)
-                    .ok_or("Page does not have child with that id")?
+                    .ok_or("Page does not have a child with that id")?
                     .to_owned()
             )?;
         }
@@ -211,7 +211,7 @@ impl HRDB {
         let head    = Branch::from(&location.branch()).await?.head()?;
         let version = location.version()?;
         if version != head {
-            return Err("Can only create Page on latest version of Branch".to_owned());
+            return Err("Can only create a Page on latest version of a Branch".to_owned());
         }
 
         if location.branch() == "master" {
@@ -333,7 +333,7 @@ impl Branch {
         }
 
         let position = self.versions.iter().position(|x| x == version)
-            .ok_or("Could not find version to fork at")?;
+            .ok_or("Could not find the specified version to fork at on this Branch")?;
 
         return Ok(Branch { versions: self.versions[..=position].to_vec() });
     }
@@ -346,7 +346,7 @@ impl Branch {
     }
 
     pub fn head(&self) -> Result<String, String> {
-        let h = self.versions.last().ok_or("No versions on Branch")?;
+        let h = self.versions.last().ok_or("No versions on this Branch")?;
         return Ok(h.to_string());
     }
 }
@@ -432,6 +432,7 @@ impl Location {
     }
 
     pub fn from_branch_version_and_path(branch: String, version: String, path: Vec<String>) -> Location {
+        if path.is_empty() { panic!("Can not create location with empty path") };
         Location((branch, Some((version, Some(path)))))
     }
 
@@ -440,20 +441,21 @@ impl Location {
     }
 
     pub fn version(&self) -> Result<String, String> {
-        Ok(((self.0).1).clone().ok_or("Location does not specify version")?.0)
+        Ok(((self.0).1).clone().ok_or("Location does not specify a version")?.0)
     }
 
     pub fn path(&self) -> Result<Vec<String>, String> {
         Ok(
             ((self.0).1).clone()
-            .ok_or("Location does not specify version")?.1.clone()
-            .ok_or("Location does not specify path")?
+            .ok_or("Location does not specify a version")?.1.clone()
+            .ok_or("Location does not specify a path")?
         )
     }
 
     pub fn back(&self) -> Result<Location, String> {
         let mut path = self.path()?;
-        path.pop().ok_or("Can not go back past root")?;
+        path.pop().ok_or("Can not have empty path")?;
+        if path.is_empty() { return Err("Can not go back past root".to_owned()) };
 
         Ok(
             Location::from_branch_version_and_path(
@@ -493,6 +495,12 @@ impl Location {
         }
 
         return Ok(ids);
+    }
+
+    pub async fn id(&self) -> Result<String, String> {
+        let a = self.end()?;
+        let page = Page::from(&a).await?;
+        return Ok(page.id);
     }
 }
 

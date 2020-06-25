@@ -25,6 +25,7 @@ struct PageFiller {
     branch: String,
     ver_no: usize,
     id: String,
+    parent: String,
 }
 
 pub async fn page(
@@ -33,6 +34,7 @@ pub async fn page(
     branch: String,
     ver_no: usize,
     id: String,
+    parent: String,
 ) -> Result<String, String> {
     // get the templates
     let base = Template::new(asset("base.html").await?)
@@ -41,7 +43,7 @@ pub async fn page(
         .ok().ok_or("Could not create page template")?;
 
     // flesh them out
-    let page_filler = PageFiller { title: title.clone(), content, branch, ver_no, id };
+    let page_filler = PageFiller { title: title.clone(), content, branch, ver_no, id, parent };
     let page_rendered = page.render(&page_filler);
     let base_filler = BaseFiller { title: title + " — Isaac Clayton", content: page_rendered };
     let base_rendered = base.render(&base_filler);
@@ -126,4 +128,27 @@ pub async fn table(
     };
     let base_rendered = base.render(&base_filler);
     return Ok(base_rendered);
+}
+
+#[derive(Content)]
+struct ErrorFiller {
+    message: String,
+}
+
+pub async fn error(message: String) -> Result<String, String> {
+    let base = Template::new(asset("base.html").await?)
+        .ok().ok_or("Could not create base template")?;
+    let error = Template::new(asset("error.html").await?)
+        .ok().ok_or("Could not create table template")?;
+
+    let error_filler = ErrorFiller { message };
+    let error_rendered = error.render(&error_filler);
+    let base_filler = BaseFiller {
+        title: "Error".to_owned() + " — Isaac Clayton",
+        content: error_rendered,
+    };
+    let base_rendered = base.render(&base_filler);
+    return Ok(base_rendered);
+
+    todo!();
 }

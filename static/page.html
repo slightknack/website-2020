@@ -1,9 +1,12 @@
 <div class="page">
     <h1 class="title">{{ title }}</h1>
     <p>
-        <a href="/perma/{{branch}}/{{ver_no}}/{{id}}" class="icon"><span class="material-icons">push_pin</span></a>
-        <a href="/edit/{{branch}}/{{id}}" class="icon"><span class="material-icons">edit</span></a>
-        <a class="icon"><span class="material-icons">create</span></a>
+        <a class="icon" href="/perma/{{branch}}/{{ver_no}}/{{parent}}"><span class="material-icons">arrow_back</span></a>
+        <a class="icon" href="/perma/{{branch}}/{{ver_no}}/{{id}}" ><span class="material-icons">push_pin</span></a>
+        <a class="icon" href="/perma/{{branch}}/head/{{id}}"><span class="material-icons">update</span></a>
+        <a class="icon" href="/edit/{{branch}}/{{id}}" ><span class="material-icons">edit</span></a>
+        <a class="icon"><span class="material-icons">add</span></a>
+        <!-- <a class="icon"><span class="material-icons">cloud_upload</span></a> -->
     </p>
     <hr>
     {{ content }}

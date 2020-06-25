@@ -86,7 +86,7 @@ h6 {
 }
 
 h1 { font-size: calc(14px + 1.6vh); }
-h2 { font-size: calc(12pt + 1.6vh); }
+h2 { font-size: calc(12px + 1.6vh); }
 h3 { font-size: calc(11px + 1.6vh); }
 h4 { font-size: calc(10.6px + 1.6vh); }
 h5 { font-size: calc(10.25px + 1.6vh); }
@@ -102,7 +102,7 @@ pre {
 }
 
 code {
-    font-size: 0.9em;
+    font-size: 0.85em;
     white-space: nowrap;
     background-color: #ddd;
     font-family: "Fira Mono", monospace;
@@ -270,7 +270,7 @@ th { padding: 0.8vh; }
 
 .CodeMirror {
   font-family: Fira Code, monospace;
-  font-size: 0.9em;
+  font-size: 0.85em;
 }
 
 /* PADDING */

@@ -50,8 +50,8 @@ pub async fn main(event: FetchEvent) -> Promise {
     return match response {
         Ok(response) => Promise::resolve(&JsValue::from(response)),
         Err(e) => {
-            // need to make an Error (404, 500, etc) page.
-            let r = responder::html(&format!("<h1>Error</h1><p>{}</p>", e), 500).unwrap();
+            let html = template::error(e).await.unwrap();
+            let r = responder::html(&html, 500).unwrap();
             Promise::resolve(&JsValue::from(r))
         },
     };
@@ -65,7 +65,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
 
         // static -> retrieve a static asset
         Some(s) if s == "static" => {
-            let file = path.iter().nth(1).ok_or("Static request has no asset")?;
+            let file = path.iter().nth(1).ok_or("Static request specified no asset")?;
             let split = file
                 .split(".")
                 .map(|x| x.to_owned())
@@ -73,7 +73,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
 
             let (_, kind) = (
                 split.iter().nth(0).ok_or("Asset is not a file")?,
-                split.iter().nth(1).ok_or("Asset has no extension")?,
+                split.iter().nth(1).ok_or("Asset is a file without an extension")?,
             );
 
             // TODO: fix annoying cloudflare css bug
@@ -85,7 +85,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
                 h if h == "html" => responder::html(&content, 200),
                 c if c == "css"  => responder::css(&content, 200),
                 _                => responder::plain(&content, 200),
-            }.ok_or("Could not generate static response")?;
+            }.ok_or("Could not generate response for static asset")?;
             Ok(response)
         },
 
@@ -103,7 +103,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
 
             let html = template::edit(title, content).await?;
             responder::html(&html, 200)
-                .ok_or("Could not load editor".to_owned())
+                .ok_or("Could not load the editor".to_owned())
         },
 
         // perma -> direct hrdb query '/branch/version_no/id'
@@ -122,6 +122,10 @@ pub async fn respond(path: Route) -> Result<Response, String> {
                 .nth(ver_no).ok_or("Version with that number does not exist")?;
             // locate_id fairly expensive, might revise schema...
             let location = HRDB::locate_id(version.to_owned(), id.to_owned()).await?;
+            let parent = match location.back() {
+                Ok(p)  => p.id().await?,
+                Err(_) => location.id().await?,
+            };
 
             let (title, content, _) = HRDB::read(&location).await?;
             let html = template::page(
@@ -130,6 +134,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
                 b.to_owned(),
                 ver_no,
                 id.to_owned(),
+                parent,
             ).await?;
             responder::html(&html, 200)
                 .ok_or("Could not generate response for location query".to_owned())
@@ -182,14 +187,19 @@ pub async fn query(short: String) -> Result<String, String> {
         .to_owned();
     let ver_no = versions.len() - 1;
     let location = HRDB::locate(head, ids.clone()).await?;
-    let (title, content, _) = HRDB::read(&location).await?;
+    let parent = match location.back() {
+        Ok(p)  => p.id().await?,
+        Err(_) => location.id().await?,
+    };
 
     // render the page
+    let (title, content, _) = HRDB::read(&location).await?;
     return template::page(
         title,
         content,
         location.branch(),
         ver_no,
         ids.last().ok_or("No id exists")?.to_owned(),
+        parent,
     ).await;
 }
