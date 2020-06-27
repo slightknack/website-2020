@@ -20,6 +20,10 @@ nav {
     flex-grow: 0;
 }
 
+#menu {
+    transition: width 0.125s ease-in-out;
+}
+
 .hidden {
     display: none;
 }
@@ -154,7 +158,7 @@ hr {
     border-top: 2pt solid #ddd;
 }
 
-a {
+a, .icon > * {
     color: inherit;
     text-decoration: none;
     background-image: linear-gradient(120deg, #ddd 0%, #ddd 100%);
@@ -166,26 +170,18 @@ a {
     border-radius: 2pt;
 }
 
+.icon {
+    background: none;
+}
+
+a:hover, .icon > *:hover  {
+    color: black;
+    background-size: 100% 100%;
+}
+
 a:after {
     content: " ❃";
     padding-right: 2pt;
-}
-
-a:visited:after {
-    color: #15aacc;
-}
-
-a:hover {
-    background-size: 100% 100%;
-    color: #1544cc;
-}
-
-a:active {
-    background-color: #1544cc;
-}
-
-.icon {
-    background: none;
 }
 
 .icon:after {
@@ -193,26 +189,8 @@ a:active {
     padding-right: 0;
 }
 
-.icon:active {
-    color: #fff;
-    background: none;
-}
-
-.icon > * {
-    background-image: linear-gradient(120deg, #ddd 0%, #ddd 100%);
-    background-size: 0 100%;
-    background-repeat: no-repeat;
-    background-position: 0 100%;
-    transition: background-size 0.125s ease-in-out, color 0.125s ease-in-out;
-}
-
-.icon > *:hover {
-    background-size: 100% 100%;
-    color: #1544cc;
-}
-
-.icon > *:active {
-    background-color: #1544cc;
+a:visited:after {
+    color: #15aacc;
 }
 
 .material-icons {

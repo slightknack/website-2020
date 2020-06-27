@@ -3,19 +3,19 @@
     <table>
         <thead>
             <tr>
-            {{ #columns }}
-                <th>{{ item }}</th>
-            {{ /columns }}
+            {{#columns}}
+                <th>{{item}}</th>
+            {{/columns}}
             </tr>
         </thead>
         <tbody>
-        {{ #rows }}
+        {{#rows}}
             <tr>
-            {{ #items }}
-                <td>{{ item }}</td>
-            {{ /items }}
+            {{#items}}
+                <td>{{item}}</td>
+            {{/items}}
             </tr>
-        {{ /rows }}
+        {{/rows}}
         </tbody>
     </table>
 </div>

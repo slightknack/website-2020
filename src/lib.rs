@@ -20,7 +20,7 @@ mod hrdb;
 mod template;
 
 use std::usize;
-use hrdb::{Location, HRDB, Shorthand};
+use hrdb::{location::Location, controller, shorthand::Shorthand};
 use wasm_bindgen::prelude::*;
 use js_sys::Promise;
 use web_sys::{FetchEvent, Response};
@@ -36,7 +36,7 @@ use route::Route;
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
 pub async fn main(event: FetchEvent) -> Promise {
-    // let r = HRDB::init().await;
+    // let r = controller::init().await;
 
     let request = event.request();
     let url = match Url::parse(&request.url()) {
@@ -96,10 +96,10 @@ pub async fn respond(path: Route) -> Result<Response, String> {
                 path.iter().nth(2).ok_or("No id specified")?,
             );
             let branch = Location::from_branch(b.to_owned());
-            let versions = HRDB::versions(branch).await?;
+            let versions = controller::versions(branch).await?;
             let head = versions.last().ok_or("No versions exist on this branch")?;
-            let location = HRDB::locate_id(head.to_owned(), id.to_owned()).await?;
-            let (title, content, _) = HRDB::read(&location).await?;
+            let location = controller::locate_id(head.to_owned(), id.to_owned()).await?;
+            let (title, content, _) = controller::read(&location).await?;
 
             let html = template::edit(title, content).await?;
             responder::html(&html, 200)
@@ -117,17 +117,17 @@ pub async fn respond(path: Route) -> Result<Response, String> {
             let branch = Location::from_branch(b.to_owned());
             let ver_no = vn.parse::<usize>()
                 .ok().ok_or("Version number was not a number")?;
-            let versions = HRDB::versions(branch).await?;
+            let versions = controller::versions(branch).await?;
             let version = versions.iter()
                 .nth(ver_no).ok_or("Version with that number does not exist")?;
             // locate_id fairly expensive, might revise schema...
-            let location = HRDB::locate_id(version.to_owned(), id.to_owned()).await?;
+            let location = controller::locate_id(version.to_owned(), id.to_owned()).await?;
             let parent = match location.back() {
                 Ok(p)  => p.id().await?,
                 Err(_) => location.id().await?,
             };
 
-            let (title, content, _) = HRDB::read(&location).await?;
+            let (title, content, _) = controller::read(&location).await?;
             let html = template::page(
                 title,
                 content,
@@ -135,6 +135,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
                 ver_no,
                 id.to_owned(),
                 parent,
+                vec![], // need to get children
             ).await?;
             responder::html(&html, 200)
                 .ok_or("Could not generate response for location query".to_owned())
@@ -145,7 +146,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
 
         // branches -> list all branches
         Some(b) if b == "branches" => {
-            let branches = HRDB::branches().await?;
+            let branches = controller::branches().await?;
             let names = branches.iter()
                 .map(|l| vec![l.branch()])
                 .collect::<Vec<Vec<String>>>();
@@ -163,6 +164,10 @@ pub async fn respond(path: Route) -> Result<Response, String> {
 
         // versions -> list all versions
         Some(v) if v == "versions" => Err("Listing versions is not yet implemented".to_owned()),
+        Some(c) if c == "creating" => Err("creating new pages is not yet implemented".to_owned()),
+        Some(d) if d == "delete" => Err("deleting a page is not yet implemented".to_owned()),
+        Some(r) if r == "relocate" => Err("relocating a page is not yet implemented".to_owned()),
+        Some(a) if a == "auth" => Err("Authenticating is not yet implemented".to_owned()),
 
         // otherwise -> call out to create hrdb query
         Some(short) => responder::html(&query(short.to_owned()).await?, 200)
@@ -171,7 +176,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
 }
 
 pub async fn query(short: String) -> Result<String, String> {
-    HRDB::init().await?;
+    controller::init().await?;
 
     // look up the id-path
     let ids = Shorthand::read()
@@ -181,19 +186,19 @@ pub async fn query(short: String) -> Result<String, String> {
 
     // find and load the page location
     let master = Location::from_branch("master".to_owned());
-    let versions = HRDB::versions(master).await?;
+    let versions = controller::versions(master).await?;
     let head = versions.last()
         .ok_or("No versions found")?
         .to_owned();
     let ver_no = versions.len() - 1;
-    let location = HRDB::locate(head, ids.clone()).await?;
+    let location = controller::locate(head, ids.clone()).await?;
     let parent = match location.back() {
         Ok(p)  => p.id().await?,
         Err(_) => location.id().await?,
     };
 
     // render the page
-    let (title, content, _) = HRDB::read(&location).await?;
+    let (title, content, _) = controller::read(&location).await?;
     return template::page(
         title,
         content,
@@ -201,5 +206,6 @@ pub async fn query(short: String) -> Result<String, String> {
         ver_no,
         ids.last().ok_or("No id exists")?.to_owned(),
         parent,
+        vec![], // need to add chidren
     ).await;
 }

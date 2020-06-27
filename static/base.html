@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <meta name="description" content="{{ title }} — Isaac Clayton" />
+        <meta name="description" content="{{title}} — Isaac Clayton" />
         <link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset.css">
         <link rel="stylesheet"
               href="https://fonts.googleapis.com/css2?family=Fira+Mono&family=Spectral+SC:wght@400;700&family=Spectral:ital,wght@0,400;0,700;1,400&display=swap" >
@@ -14,7 +14,7 @@
             var Turbolinks = require("turbolinks")
             Turbolinks.start()
         </script> -->
-        <title>{{ title }}</title>
+        <title>{{title}}</title>
     </head>
     <body>
         <div class="navbar">
@@ -24,21 +24,28 @@
                     <li><a class="icon" onclick="menuToggle()"><span id="toggle" class="material-icons">menu</span></a></li>
                 </ul>
                 <div id="menu" class="hidden">
-                    <h1>{{ title }}</h1>
+                    <h1>{{title}}</h1>
+                    {{#children}}
                     <ul>
-                        {{ #children }}
-                        <li><a href="/perma/{{ver_no}}/{{id}}">{{ name }}</a></li>
-                        {{ /children }}
+                        {{#items}}
+                        <li><a href="/perma/{{ver_no}}/{{id}}">{{name}}</a></li>
+                        {{/items}}
                     </ul>
+                    {{/children}}
                     <h2>Actions</h2>
+                    {{#actions}}
                     <ul class="navlist">
-                        {{ #actions }}
+                        {{#items}}
                         <li>
-                            <span class="material-icons">{{ icon_name }}</span>
-                            <a href="{{link}}">{{ name }}</a>
+                            <span class="material-icons">{{icon_name}}</span>
+                            <a href="{{link}}">{{name}}</a>
                         </li>
-                        {{ /actions }}
+                        {{/items}}
                     </ul>
+                    {{/actions}}
+                    {{^actions}}
+                        <p>No actions exist for this page…</p>
+                    {{/actions}}
                 </div>
                 <script>
                     function menuToggle() {
@@ -58,7 +65,7 @@
             <!-- Not much for now... -->
         </div>
         <div class="content">
-            {{{ content }}}
+            {{{content}}}
             <!--
                 why are you looking through this page's html?
                 it's nothing special.
