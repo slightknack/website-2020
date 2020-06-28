@@ -1,10 +1,13 @@
+use ramhorns::{Template, Content};
+use crate::template::base::{Children, Actions, Base, asset};
+
 #[derive(Content)]
 struct Edit {
     title: String,
     old:   String,
 }
 
-pub async fn edit(
+pub async fn render(
     title: String,
     old:   String,
 ) -> Result<String, String> {
@@ -20,8 +23,8 @@ pub async fn edit(
     let base_data = Base {
         title: "Editing — ".to_owned() + &title,
         content: edit_rendered,
-        children: List { items: vec![] },
-        actions:  List { items: vec![] },
+        children: None,
+        actions:  None,
     };
     let base_rendered = base.render(&base_data);
     return Ok(base_rendered);

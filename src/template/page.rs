@@ -1,3 +1,6 @@
+use ramhorns::{Template, Content};
+use crate::template::base::{Child, Children, Action, Actions, Base, asset};
+use crate::route::Route;
 
 #[derive(Content)]
 struct Page {
@@ -6,7 +9,7 @@ struct Page {
     content: String,
 }
 
-pub async fn page(
+pub async fn render(
     title:    String,
     content:  String,
     branch:   String,
@@ -21,7 +24,7 @@ pub async fn page(
     let page = Template::new(asset("page.html").await?)
         .ok().ok_or("Could not create page template")?;
 
-    let actions = List {
+    let actions = Actions {
         items: vec![
             ("arrow_back", Route::over(vec!["perma".to_string(), branch.clone(), ver_no.to_string(), parent]), "Back"),
             ("push_pin", Route::over(vec!["perma".to_string(), branch.clone(), ver_no.to_string(), id.clone()]), "Permalink for this Version"),
@@ -43,7 +46,7 @@ pub async fn page(
             .collect::<Vec<Action>>(),
     };
 
-    let children = List {
+    let children = Children {
         items: child_pair.into_iter()
             .map(
                 |pair| {
@@ -57,7 +60,12 @@ pub async fn page(
     // flesh them out
     let page_data = Page { title: title.clone(), content };
     let page_rendered = page.render(&page_data);
-    let base_data = Base { title, content: page_rendered, children, actions };
+    let base_data = Base {
+        title,
+        content: page_rendered,
+        children: None, // Some(children),
+        actions: Some(actions)
+    };
     let base_rendered = base.render(&base_data);
     return Ok(base_rendered);
 }

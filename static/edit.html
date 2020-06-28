@@ -1,23 +1,28 @@
 <div class="page">
-    <script src="https://codemirror.net/lib/codemirror.js"></script>
-    <script src="https://codemirror.net/mode/markdown/markdown.js"></script>
-
     <h1 class="title">{{title}}</h1>
-    <p>You must be authenticated for your changes to save.</p>
+    <p>
+        You must be authenticated for your changes to save. Styling with
+        <a href="https://commonmark.org/help/">Markdown</a> is supported.
+    </p>
 
     <form id="document">
-        <textarea id="editor">{{{old}}}</textarea>
-        <br>
+        <textarea
+            id="editor"
+            placeholder="**This is my favorite book** in all the world, though *I* have never read it."
+            onkeypress="fitContent()"
+        >{{{old}}}</textarea>
         <input type="submit" value="Commit">
     </form>
 
-    <!-- Get rid of codemirrior in favor of a simple textarea? -->
     <script>
-        var editor = document.getElementById("editor");
-        var mirror = CodeMirror.fromTextArea(editor, {
-            lineNumbers: true,
-            lineWrapping: true,
-            mode: "markdown",
-        });
+        function fitContent() {
+            var editor = document.getElementById("editor");
+            editor.style.height = 0;
+            editor.style.height = editor.scrollHeight + "px";
+        }
+
+        // fits content on page load
+        fitContent()
     </script>
+
 </div>

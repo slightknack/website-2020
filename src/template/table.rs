@@ -1,3 +1,6 @@
+use ramhorns::{Template, Content};
+use crate::template::base::{Children, Actions, Base, asset};
+
 #[derive(Debug, Content)]
 struct Table {
     title: String,
@@ -15,7 +18,7 @@ struct Item {
     item: String,
 }
 
-pub async fn table(
+pub async fn render(
     title: String,
     c: Vec<String>,
     r: Vec<Vec<String>>,
@@ -40,13 +43,13 @@ pub async fn table(
 
     // flesh them out
     let table_data = Table { title: title.clone(), columns, rows };
-    log(&format!("table {:?}", table_data));
+    // log(&format!("table {:?}", table_data));
     let table_rendered = table.render(&table_data);
     let base_data = Base {
         title: "Listing ".to_owned() + &title,
         content: table_rendered,
-        children: List { items: vec![] },
-        actions:  List { items: vec![] },
+        children: None,
+        actions:  None,
     };
     let base_rendered = base.render(&base_data);
     return Ok(base_rendered);

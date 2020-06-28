@@ -50,7 +50,7 @@ pub async fn main(event: FetchEvent) -> Promise {
     return match response {
         Ok(response) => Promise::resolve(&JsValue::from(response)),
         Err(e) => {
-            let html = template::error(e).await.unwrap();
+            let html = template::error::render(e).await.unwrap();
             let r = responder::html(&html, 500).unwrap();
             Promise::resolve(&JsValue::from(r))
         },
@@ -78,7 +78,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
 
             // TODO: fix annoying cloudflare css bug
             log(&format!("getting {:?}", file));
-            let content = template::asset(file).await?;
+            let content = template::base::asset(file).await?;
             log(&format!("{:?} content", file));
 
             let response = match kind {
@@ -101,7 +101,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
             let location = controller::locate_id(head.to_owned(), id.to_owned()).await?;
             let (title, content, _) = controller::read(&location).await?;
 
-            let html = template::edit(title, content).await?;
+            let html = template::edit::render(title, content).await?;
             responder::html(&html, 200)
                 .ok_or("Could not load the editor".to_owned())
         },
@@ -128,7 +128,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
             };
 
             let (title, content, _) = controller::read(&location).await?;
-            let html = template::page(
+            let html = template::page::render(
                 title,
                 content,
                 b.to_owned(),
@@ -151,7 +151,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
                 .map(|l| vec![l.branch()])
                 .collect::<Vec<Vec<String>>>();
 
-            let html = template::table(
+            let html = template::table::render(
                 "Branches".to_owned(),
                 vec!["Name".to_owned()],
                 names,
@@ -164,7 +164,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
 
         // versions -> list all versions
         Some(v) if v == "versions" => Err("Listing versions is not yet implemented".to_owned()),
-        Some(c) if c == "creating" => Err("creating new pages is not yet implemented".to_owned()),
+        Some(c) if c == "create" => Err("creating new pages is not yet implemented".to_owned()),
         Some(d) if d == "delete" => Err("deleting a page is not yet implemented".to_owned()),
         Some(r) if r == "relocate" => Err("relocating a page is not yet implemented".to_owned()),
         Some(a) if a == "auth" => Err("Authenticating is not yet implemented".to_owned()),
@@ -199,7 +199,7 @@ pub async fn query(short: String) -> Result<String, String> {
 
     // render the page
     let (title, content, _) = controller::read(&location).await?;
-    return template::page(
+    return template::page::render(
         title,
         content,
         location.branch(),
