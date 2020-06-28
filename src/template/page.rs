@@ -10,12 +10,12 @@ struct Page {
 }
 
 pub async fn render(
-    title:    String,
-    content:  String,
-    branch:   String,
-    ver_no:   usize,
-    id:       String,
-    parent:   String,
+    title:   String,
+    content: String,
+    branch:  String,
+    ver_no:  String,
+    id:      String,
+    parent:  String,
     child_pair: Vec<(String, String)>,
 ) -> Result<String, String> {
     // get the templates

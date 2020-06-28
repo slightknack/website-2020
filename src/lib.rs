@@ -28,10 +28,7 @@ use url::Url;
 use logger::log;
 use route::Route;
 
-// main should act as the interface between rust and js
-// i.e. no other modules shouldn't have to care about js_sys, etc.
-// turbolinks
-// codemirrior
+// todo: break this up
 
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
@@ -115,12 +112,19 @@ pub async fn respond(path: Route) -> Result<Response, String> {
             );
 
             let branch = Location::from_branch(b.to_owned());
-            let ver_no = vn.parse::<usize>()
-                .ok().ok_or("Version number was not a number")?;
             let versions = controller::versions(branch).await?;
-            let version = versions.iter()
-                .nth(ver_no).ok_or("Version with that number does not exist")?;
-            // locate_id fairly expensive, might revise schema...
+
+            let version = if vn == "head" {
+                versions.iter().last().ok_or("No versions exist on this branch yet")?
+            } else {
+                let ver_no = vn.parse::<usize>()
+                    .ok().ok_or("Version number was not a number")?;
+                versions.iter()
+                    .nth(ver_no).ok_or("Version with that number does not exist")?
+            };
+
+            // TODO: root
+
             let location = controller::locate_id(version.to_owned(), id.to_owned()).await?;
             let parent = match location.back() {
                 Ok(p)  => p.id().await?,
@@ -132,7 +136,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
                 title,
                 content,
                 b.to_owned(),
-                ver_no,
+                vn.to_owned(),
                 id.to_owned(),
                 parent,
                 vec![], // need to get children
@@ -203,7 +207,7 @@ pub async fn query(short: String) -> Result<String, String> {
         title,
         content,
         location.branch(),
-        ver_no,
+        ver_no.to_string(),
         ids.last().ok_or("No id exists")?.to_owned(),
         parent,
         vec![], // need to add chidren
