@@ -3,25 +3,33 @@
     --bg-fill: white;
     --text-fill: black;
     --em-fill: #ddd;
-    --highlight: #15aacc;
-    --accent: #1544cc;
+    --primary: #1544cc;
+    --accent: #15aacc;
 } */
 
 :root {
-    --bg-fill: #ececec;
-    --text-fill: #222831;
-    --em-fill: #cfb8a1;
-    --highlight: #f2a365;
-    --accent: #c70039;
+    /* content */
+    --bg-fill: #fff;
+    --text-fill: #333;
+    --em-fill: #ddd;
+    --primary: #08f;
+    --accent: #FFFF40;
+
+    /* syntax */
+    --keyword: #80f;
+    --comment: #777;
+    --literal: var(--primary);
 }
 
 @media (prefers-color-scheme:dark) {
     :root {
-        --bg-fill: #222831;
-        --text-fill: #ececec;
-        --em-fill: #30475e;
-        --highlight: #c70039;
-        --accent: #f2a365;
+        --bg-fill: #000;
+        --text-fill: #ddd;
+        --em-fill: #333;
+        --primary: #f44;
+        --accent: #FFFF40;
+
+        --keyword: #a4f;
     }
 }
 
@@ -43,7 +51,7 @@ nav {
     top: 0;
     margin: 0;
     padding: 3vh;
-    background-color: var(--accent);
+    background-color: var(--primary);
     color: var(--bg-fill);
     height: calc(100vh - 6vh);
     flex-grow: 0;
@@ -154,6 +162,12 @@ pre code {
     border-radius: none;
 }
 
+.hljs {
+    overflow: inherit !important;
+    padding: 0 !important;
+    background: none !important;
+}
+
 blockquote {
     margin-top: 2vh;
     margin-bottom: 2vh;
@@ -216,6 +230,7 @@ a:hover, .icon > *:hover  {
 a:after {
     content: " ❃"; /* Non-breaking space */
     padding-right: 2pt;
+    color: var(--accent);
 }
 
 .icon:after {
@@ -224,7 +239,7 @@ a:after {
 }
 
 a:visited:after {
-    color: var(--highlight);
+    color: inherit;
 }
 
 .material-icons {
@@ -245,12 +260,12 @@ button, input[type="submit"], input[type="reset"] {
     letter-spacing: 0.05em;
     font-family: "Spectral SC", serif;
     color: var(--bg-fill);
-    background-color: var(--accent);
+    background-color: var(--primary);
     transition: background-color 0.125s ease-in-out;
 }
 
 button:active, input[type=submit]:active, input[type="reset"]:active {
-    background-color: var(--highlight);
+    background-color: var(--accent);
 }
 
 em {
@@ -315,5 +330,58 @@ textarea {
 }
 
 textarea:focus {
-    border-color: var(--accent);
+    border-color: var(--primary);
+}
+
+/*
+    Why isn't this loaded as a seperate resource? 2 reasons:
+
+    1. It allows me to use css-vars for more consistent coloring
+    2. Wasm workers has trouble serving stylesheets, for some reason.
+       It's probably my fault, so I'm looking into it.
+*/
+
+.hljs {
+    color: var(--text-fill);
+}
+
+.hljs-keyword,
+.hljs-link,
+.hljs-literal,
+.hljs-section,
+.hljs-selector-tag {
+    color: var(--keyword);
+}
+.hljs-addition,
+.hljs-attribute,
+.hljs-bullet,
+.hljs-name,
+.hljs-string,
+.hljs-symbol,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-title,
+.hljs-type,
+.hljs-variable {
+    color: var(--literal);
+}
+.hljs-comment,
+.hljs-deletion,
+.hljs-meta,
+.hljs-quote {
+    color: var(--comment);
+}
+.hljs-doctag,
+.hljs-keyword,
+.hljs-literal,
+.hljs-name,
+.hljs-section,
+.hljs-selector-tag,
+.hljs-strong,
+.hljs-title,
+.hljs-type {
+    font-weight: 700;
+}
+.hljs-emphasis {
+    font-style: italic;
 }

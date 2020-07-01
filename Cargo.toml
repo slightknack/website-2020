@@ -29,18 +29,18 @@ ramhorns = "0.9"
 
 # js integration
 js-sys = "0.3"
+cookie = "0.14"
 futures = "0.3"
 
 [dependencies.web-sys]
 version = "0.3"
 features = [
   'FetchEvent',
-  # 'FormData',
+  'FormData',
   'Request',
+  'ResponseInit',
   'Response',
   'Headers',
-  'ResponseInit',
-  'Blob',
 ]
 
 [dev-dependencies]
