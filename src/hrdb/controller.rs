@@ -51,6 +51,8 @@ pub async fn children(location: Location) -> Result<Vec<Location>, String> {
 
 pub async fn locate_id(version: Location, id: String) -> Result<Location, String> {
     // breadth-first search
+    // would depth-first be faster?
+    // they're most likely to be reading a leaf
     let mut queue = vec![root(version)?];
 
     while !queue.is_empty() {
@@ -103,7 +105,7 @@ pub async fn init() -> Result<(), String> {
     let version = utils::write(&root.to_string()?).await?;
 
     let mut table = HashMap::new();
-    table.insert(root.short(), vec![root.id()]);
+    table.insert(root.short(), (0, root.id(), "".to_owned()));
     Shorthand::wrap(table).write().await?;
 
     utils::ensure("master").await?;
@@ -144,8 +146,9 @@ async fn commit(location: Location, updated: Page) -> Result<(), String> {
     }
 
     if location.branch() == "master" {
-        let mut ids = location.ids().await?;
-        Shorthand::update(updated.short(), ids).await?;
+        let id     = location.id().await?;
+        let ver_no = versions(location.clone()).await?.len();
+        Shorthand::update(updated.short(), ver_no, id).await?;
     }
 
     // get the new address of the page that has been updated

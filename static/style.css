@@ -13,10 +13,10 @@
     --text-fill: #333;
     --em-fill: #ddd;
     --primary: #08f;
-    --accent: #FFFF40;
+    --accent: #ff4;
 
     /* syntax */
-    --keyword: #80f;
+    --keyword: #96f;
     --comment: #777;
     --literal: var(--primary);
 }
@@ -27,9 +27,9 @@
         --text-fill: #ddd;
         --em-fill: #333;
         --primary: #f44;
-        --accent: #FFFF40;
+        --accent: #ff4;
 
-        --keyword: #a4f;
+        --keyword: #b7f;
     }
 }
 
