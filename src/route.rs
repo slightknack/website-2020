@@ -1,4 +1,5 @@
 use std::slice::Iter;
+use std::vec::IntoIter;
 
 pub struct Route(Vec<String>);
 
@@ -18,6 +19,10 @@ impl Route {
 
     pub fn iter(&self) -> Iter<'_, String> {
         self.0.iter()
+    }
+
+    pub fn into_iter(self) -> IntoIter<String> {
+        self.0.into_iter()
     }
 
     pub fn to_vec(self) -> Vec<String> {

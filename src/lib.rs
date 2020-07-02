@@ -42,7 +42,7 @@ pub async fn main(event: FetchEvent) -> Promise {
     let path = Route::new(&url.path().to_lowercase());
     let method = request.method().to_lowercase();
     let authed = auth::validate(&request).await;
-    let response = respond(path, method, authed).await;
+    let response = respond(request, path, method, authed).await;
 
     // if the response failed, we return an internal server error
     return match response {
@@ -55,30 +55,52 @@ pub async fn main(event: FetchEvent) -> Promise {
     };
 }
 
-pub async fn respond(path: Route, _method: String, _authed: bool) -> Result<Response, String> {
+pub async fn respond(request: Request, path: Route, method: String, authed: bool) -> Result<Response, String> {
     match path.iter().nth(0) {
         // root -> redirect to home
         None => responder::redirect("/home")
             .ok_or("Could not redirect".to_owned()),
 
         // static -> retrieve a static asset
-        Some(s) if s == "static" => renderer::static_::respond(path).await,
-
-        // edit -> load the editor '/branch/id'
-        Some(e) if e == "edit" => renderer::edit::respond(path).await,
+        Some(s) if s == "static" => match method.as_ref() {
+            "get" => renderer::static_::respond(path).await,
+            u     => Err(format!("'{}' method not allowed on /static", u)),
+        }
 
         // perma -> direct hrdb query '/branch/version_no/id'
-        Some(p) if p == "perma" => renderer::perma::respond(path).await,
+        Some(p) if p == "perma" => match method.as_ref() {
+            "get" => renderer::perma::respond(path).await,
+            u     => Err(format!("'{}' method not allowed on /perma", u)),
+        }
 
         // branches -> list all branches
-        Some(b) if b == "branches" => renderer::branches::respond(path).await,
+        Some(b) if b == "branches" => match method.as_ref() {
+            "get" => renderer::branches::respond(path).await,
+            u     => Err(format!("'{}' method not allowed on /branches", u)),
+        }
 
         // versions -> list all versions
-        Some(v) if v == "versions" => renderer::versions::respond(path).await,
+        Some(v) if v == "versions" => match method.as_ref() {
+            "get" => renderer::versions::respond(path).await,
+            u     => Err(format!("'{}' method not allowed on /versions", u)),
+        }
 
         // serve login prompt
-        // TODO: authenticate responses
-        Some(a) if a == "auth" => renderer::auth::respond().await,
+        Some(a) if a == "auth" => match method.as_ref() {
+            "get"  => renderer::auth::respond().await,
+            "post" => renderer::auth::form(request).await,
+            u     => Err(format!("'{}' method not allowed on /auth", u)),
+
+        }
+
+        // edit -> load the editor '/branch/id'
+        Some(e) if e == "edit" => match method.as_ref() {
+            "get"  => renderer::edit::respond(path).await,
+            // "post" => renderer::edit::form(path, request).await,
+            u     => Err(format!("'{}' method not allowed on /auth", u)),
+
+        }
+
 
         // unimplemented
 

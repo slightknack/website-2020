@@ -17,9 +17,7 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
         <!-- Syntax highlighting -->
-        <!-- <link rel="stylesheet"
-              href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/dracula.min.css"> -->
-        <script async src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script>
     </head>
     <body>
@@ -39,23 +37,24 @@
                             <li><a href="/perma/{{ver_no}}/{{id}}">{{value}}</a></li>
                             {{/items}}
                         </ul>
+                        <!-- Page actions  -->
+                        <h2>Actions</h2>
                     {{/children}}
 
-                    <!-- Page actions  -->
-                    <h2>Actions</h2>
                     {{#actions}}
-                        <ul class="navlist">
+                    <ul class="navlist">
                             {{#items}}
                             <li>
                                 <span class="material-icons">{{icon}}</span>
                                 <a href="{{link}}">{{value}}</a>
                             </li>
                             {{/items}}
-                        </ul>
+                    </ul>
                     {{/actions}}
-                    {{^actions}}
-                        <p>No actions exist for this page…</p>
-                    {{/actions}}
+                    <hr>
+                    <p>
+                        All <em>content</em> © Isaac Clayton.
+                    </p>
                 </div>
                 <script>
                     function menuToggle() {

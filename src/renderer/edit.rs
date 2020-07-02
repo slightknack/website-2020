@@ -16,7 +16,7 @@ pub async fn respond(path: Route) -> Result<Response, String> {
     let location = controller::locate_id(head.to_owned(), id.to_owned()).await?;
     let (title, content, _) = controller::read(&location).await?;
 
-    let html = template::edit::render(title, content).await?;
+    let html = template::edit::render(title, content, location.branch(), location.id().await?).await?;
     responder::html(&html, 200)
         .ok_or("Could not load the editor".to_owned())
 }

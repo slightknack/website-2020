@@ -28,10 +28,8 @@ pub async fn render(
         items: vec![
             ("arrow_back", Route::over(vec!["perma".to_string(), branch.clone(), ver_no.to_string(), parent]), "Back"),
             ("push_pin", Route::over(vec!["perma".to_string(), branch.clone(), ver_no.to_string(), id.clone()]), "Permalink this Version"),
-            ("update", Route::over(vec!["perma".to_string(), branch.clone(), "head".to_string(), id.clone()]), "Jump to Present"),
             ("edit", Route::over(vec!["edit".to_string(), branch.clone(), id.clone()]), "Edit this Page"),
-            ("add", Route::over(vec!["create".to_string(), branch.clone(), id.clone()]), "Create a new page"),
-            ("delete", Route::over(vec!["delete".to_string(), branch.clone(), id.clone()]), "Delete this page"),
+            ("update", Route::over(vec!["perma".to_string(), branch.clone(), "head".to_string(), id.clone()]), "Jump to Present"),
         ].into_iter()
             .map(
             |action| {

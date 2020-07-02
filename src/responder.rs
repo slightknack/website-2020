@@ -1,5 +1,6 @@
 use wasm_bindgen::JsValue;
 use web_sys::{Headers, Response, ResponseInit};
+use cookie::Cookie;
 
 pub fn respond(content: &str, headers: Headers, status: u16) -> Option<Response> {
     let mut init = ResponseInit::new();
@@ -29,5 +30,12 @@ pub fn plain(c: &str, status: u16) -> Option<Response> {
 pub fn redirect(url: &str) -> Option<Response> {
     let mut headers: Headers = Headers::new().ok()?;
     headers.set("location", url).ok()?;
+    respond("", headers, 302)
+}
+
+pub fn cookie(c: Cookie, redirect: &str) -> Option<Response> {
+    let mut headers: Headers = Headers::new().ok()?;
+    headers.set("location", redirect).ok()?;
+    headers.set("set-cookie", &c.to_string()).ok()?;
     respond("", headers, 302)
 }
