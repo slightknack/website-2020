@@ -26,10 +26,10 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 url = "1.7"
 ramhorns = "0.9"
+time = "0.2"
 
 # js integration
 js-sys = "0.3"
-cookie = "0.14"
 futures = "0.3"
 
 [dependencies.web-sys]
@@ -42,6 +42,10 @@ features = [
   'Response',
   'Headers',
 ]
+
+[dependencies.cookie]
+version = "0.14"
+features = ["secure"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.2"

@@ -58,7 +58,7 @@ nav {
 }
 
 #menu {
-    transition: width 0.125s ease-in-out;
+    transition: flex 0.125s ease-in-out;
     min-width: calc(256px - 6vh);
 }
 
@@ -96,7 +96,7 @@ nav {
     min-width: 0;
 }
 
-.page, .edit {
+.page {
     padding-left: 3vh;
     padding-right: 3vh;
     margin-left: auto;
@@ -249,7 +249,26 @@ a:visited:after {
     vertical-align: top;
 }
 
+input {
+    display: block;
+    padding: 2vh;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    border: 2pt solid var(--em-fill);
+    border-radius: 2pt;
+    width: calc(100% - 4vh - 4pt);
+    max-width: calc(50vh - 4vh - 4pt);
+    background-color: var(--bg-fill);
+    color: var(--text-fill);
+    font-family: "Spectral", serif;
+    font-size: calc(10px + 1.6vh);
+    line-height: 1.3;
+    overflow-x: scroll;
+}
+
 button, input[type="submit"], input[type="reset"] {
+    width: 100%;
+    max-width: 50vh;
     border: none;
     font: inherit;
     cursor: pointer;
@@ -329,7 +348,7 @@ textarea {
     border-radius: 2pt;
 }
 
-textarea:focus {
+textarea:focus, input:focus {
     border-color: var(--primary);
 }
 
@@ -352,6 +371,7 @@ textarea:focus {
 .hljs-selector-tag {
     color: var(--keyword);
 }
+
 .hljs-addition,
 .hljs-attribute,
 .hljs-bullet,
@@ -365,12 +385,14 @@ textarea:focus {
 .hljs-variable {
     color: var(--literal);
 }
+
 .hljs-comment,
 .hljs-deletion,
 .hljs-meta,
 .hljs-quote {
     color: var(--comment);
 }
+
 .hljs-doctag,
 .hljs-keyword,
 .hljs-literal,
@@ -382,6 +404,7 @@ textarea:focus {
 .hljs-type {
     font-weight: 700;
 }
+
 .hljs-emphasis {
     font-style: italic;
 }

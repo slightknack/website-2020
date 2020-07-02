@@ -11,6 +11,7 @@ extern crate sha2;
 extern crate url;
 extern crate getrandom;
 extern crate ramhorns;
+extern crate time;
 
 mod utils;
 mod kv;
@@ -20,30 +21,28 @@ mod route;
 mod hrdb;
 mod template;
 mod renderer;
+mod auth;
 
-use std::usize;
-use hrdb::{location::Location, controller, shorthand::Shorthand};
 use wasm_bindgen::prelude::*;
 use js_sys::Promise;
-use web_sys::{FetchEvent, Response};
+use web_sys::{FetchEvent, Response, Request};
 use url::Url;
 use logger::log;
 use route::Route;
-
-// todo: break this up
+use cookie::Cookie;
 
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
 pub async fn main(event: FetchEvent) -> Promise {
-    // let r = controller::init().await;
-
     let request = event.request();
     let url = match Url::parse(&request.url()) {
         Ok(v) => v,
         Err(_) => return Promise::reject(&JsValue::from("Could not parse url")),
     };
     let path = Route::new(&url.path().to_lowercase());
-    let response = respond(path, false).await;
+    let method = request.method().to_lowercase();
+    let authed = auth::validate(&request).await;
+    let response = respond(path, method, authed).await;
 
     // if the response failed, we return an internal server error
     return match response {
@@ -56,7 +55,7 @@ pub async fn main(event: FetchEvent) -> Promise {
     };
 }
 
-pub async fn respond(path: Route, authed: bool) -> Result<Response, String> {
+pub async fn respond(path: Route, _method: String, _authed: bool) -> Result<Response, String> {
     match path.iter().nth(0) {
         // root -> redirect to home
         None => responder::redirect("/home")
@@ -77,6 +76,10 @@ pub async fn respond(path: Route, authed: bool) -> Result<Response, String> {
         // versions -> list all versions
         Some(v) if v == "versions" => renderer::versions::respond(path).await,
 
+        // serve login prompt
+        // TODO: authenticate responses
+        Some(a) if a == "auth" => renderer::auth::respond().await,
+
         // unimplemented
 
         // search -> search master for query
@@ -85,7 +88,6 @@ pub async fn respond(path: Route, authed: bool) -> Result<Response, String> {
         Some(c) if c == "create" => renderer::create::respond(path).await,
         Some(d) if d == "delete" => renderer::delete::respond(path).await,
         Some(r) if r == "relocate" => renderer::relocate::respond(path).await,
-        Some(a) if a == "auth" => renderer::auth::respond(path).await,
 
         // otherwise -> call out to create hrdb query
         Some(short) => renderer::shorthand::respond(short).await,

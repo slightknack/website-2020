@@ -19,7 +19,7 @@
         <!-- Syntax highlighting -->
         <!-- <link rel="stylesheet"
               href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/dracula.min.css"> -->
-        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script>
+        <script async src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script>
     </head>
     <body>
@@ -28,6 +28,7 @@
                 <ul class="iconlist">
                     <li><a class="icon" href="/home"><span class="material-icons">home</span></a></li>
                     <li><a class="icon" onclick="menuToggle()"><span id="toggle" class="material-icons">menu</span></a></li>
+                    <li><a class="icon" href="/auth"><span class="material-icons">login</span></a></li>
                 </ul>
                 <div id="menu" class="hidden">
                     <!-- Child pages -->
@@ -38,9 +39,6 @@
                             <li><a href="/perma/{{ver_no}}/{{id}}">{{value}}</a></li>
                             {{/items}}
                         </ul>
-                    {{/children}}
-                    {{^children}}
-                        <p>This page has no children…</p>
                     {{/children}}
 
                     <!-- Page actions  -->

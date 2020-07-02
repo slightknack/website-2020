@@ -33,6 +33,20 @@ extern "C" {
     // pub fn list() -> Promise;
 }
 
+#[wasm_bindgen]
+extern "C" {
+    pub type AuthNS;
+
+    #[wasm_bindgen(static_method_of = AuthNS)]
+    pub fn get(key: &str, data_type: &str) -> Promise;
+
+    #[wasm_bindgen(static_method_of = AuthNS)]
+    pub fn put(key: &str, val: &str, params: JsValue) -> Promise;
+
+    #[wasm_bindgen(static_method_of = AuthNS)]
+    pub fn delete(key: &str) -> Promise;
+}
+
 pub async fn value(promise: Promise) -> Option<JsValue> {
     JsFuture::from(promise).await.ok()
 }
