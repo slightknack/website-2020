@@ -12,6 +12,7 @@ extern crate url;
 extern crate getrandom;
 extern crate ramhorns;
 extern crate time;
+extern crate scrypt;
 
 mod utils;
 mod kv;
