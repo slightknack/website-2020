@@ -72,7 +72,7 @@ pub async fn locate_id(version: Location, id: String) -> Result<Location, String
 
 pub async fn locate(version: Location, ids: Vec<String>) -> Result<Location, String> {
     let mut location = root(version)?;
-    log(&format!("ids: {:?}", ids));
+    // log(&format!("ids: {:?}", ids));
 
     for id in ids[1..].iter() {
         let top = location.end()?;

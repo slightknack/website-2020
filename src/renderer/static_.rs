@@ -17,9 +17,9 @@ pub async fn respond(path: Route) -> Result<Response, String> {
     );
 
     // TODO: fix annoying cloudflare css bug
-    log(&format!("getting {:?}", file));
+    // log(&format!("getting {:?}", file));
     let content = template::base::asset(file).await?;
-    log(&format!("{:?} content", file));
+    // log(&format!("{:?} content", file));
 
     let response = match kind {
         h if h == "html" => responder::html(&content, 200),

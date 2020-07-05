@@ -5,6 +5,7 @@ use js_sys::JSON;
 use time::Duration;
 use crate::hrdb::utils;
 use crate::kv;
+use crate::logger::log;
 
 // AuthNS stores cookie code hashes ('checks') -> said codes.
 // A cookie stores a check.
@@ -44,7 +45,7 @@ pub async fn session<'a>() -> Result<Cookie<'a>, String> {
     let check = utils::hash(&code);
 
     // cookies expire in 8 days = 691200 seconds
-    let expiration = JSON::parse("{expirationTtl: 691200})")
+    let expiration = JSON::parse("{\"expirationTtl\": 691200}")
         .ok().ok_or("Could not set session expiration")?;
     kv::value(kv::AuthNS::put(&check, &code, expiration)).await
         .ok_or("Could not record session server-side")?;
@@ -58,4 +59,20 @@ pub async fn session<'a>() -> Result<Cookie<'a>, String> {
         .finish();
 
     return Ok(session);
+}
+
+pub async fn check(password: String) -> Result<bool, String> {
+    let hash = kv::value(kv::AuthNS::get("password", "text")).await
+        .ok_or("Could not retrieve stored password hash")?
+        .as_string()
+        .ok_or("Could not unwrap the hash")?;
+
+    let salt = kv::value(kv::AuthNS::get("salt", "text")).await
+        .ok_or("Could not retrieve stored password salt")?
+        .as_string()
+        .ok_or("Could not unwrap the salt")?;
+
+    let salted = password + &salt;
+    let attempt = utils::hash(&salted);
+    return Ok(hash == attempt);
 }

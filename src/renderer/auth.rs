@@ -1,9 +1,14 @@
+use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
-use web_sys::{Response, Request};
-use scrypt::{ScryptParams, scrypt_simple, scrypt_check};
+use web_sys::{Response, Request, FormData};
+use serde::{Serialize, Deserialize};
+use serde_json;
+use js_sys::Object;
+
 use crate::responder;
 use crate::template;
 use crate::logger::log;
+use crate::auth;
 
 pub async fn respond() -> Result<Response, String> {
     let html = template::auth::render().await?;
@@ -11,39 +16,30 @@ pub async fn respond() -> Result<Response, String> {
         .ok_or("Could not generate authentication Page response".to_owned())
 }
 
-pub async fn form(request: Request) -> Result<Response, String> {
-    log("Tried to submit password");
-    // get redirect url
-    // let headers = request.headers();
-    // let redirect = match headers.referrer() {
-    //     Ok(Some(v)) => v,
-    //     _ => request.url(),
-    // };
-
-    // get form data
-    let form_data_promise = request.form_data()
-        .ok().ok_or("Could not extract form data")?;
-    let form_data = JsFuture::from(form_data_promise).await
-        .ok().ok_or("Could not retrieve form data")?;
-
-    // get password hash
-    // compare hashes
-    // set cookie if true
-    // redirect
-
-    Err("Full authentication not yet implemented.".to_owned())
+pub async fn parse_form(request: Request) -> Result<FormData, String> {
+    let promise = request.form_data()
+        .ok().ok_or("Could not get form data from request")?;
+    let js_value = JsFuture::from(promise).await
+        .ok().ok_or("Could not resolve FormData Promise")?;
+    return Ok(FormData::from(js_value));
 }
 
-async fn check(password: String) -> Result<bool, String> {
-    let params = ScryptParams::new(14, 8, 1)
-        .ok().ok_or("Could not create hash params")?;
-    let hash = kv::value(kv::AuthNS::get("password", "text")).await
-        .ok_or("Could not retrieve stored password hash")?
-        .as_string()
-        .ok_or("Could not unwrap the hash")?;
+pub async fn form(request: Request) -> Result<Response, String> {
+    let redirect = match request.headers().get("referer") {
+        Ok(Some(v)) => v,
+        _ => request.url(),
+    };
 
-    return match scrypt_check(&password, &hash).ok() {
-        Some(_) => Ok(true),
-        None    => Ok(false),
+    let form = parse_form(request).await?;
+    let password = form.get("password").as_string()
+        .ok_or("Could not retrieve password from request")?;
+
+    return if auth::check(password).await? == false {
+        responder::redirect(&redirect)
+            .ok_or("Password was incorrect and could not generate redirect".to_owned())
+    } else {
+        let session = auth::session().await?;
+        responder::cookie(session, "/home")
+            .ok_or("Could not generate response for authentication".to_owned())
     }
 }

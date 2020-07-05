@@ -9,10 +9,8 @@ extern crate serde;
 extern crate serde_json;
 extern crate sha2;
 extern crate url;
-extern crate getrandom;
 extern crate ramhorns;
 extern crate time;
-extern crate scrypt;
 
 mod utils;
 mod kv;
@@ -31,11 +29,13 @@ use url::Url;
 use logger::log;
 use route::Route;
 use cookie::Cookie;
+use wasm_bindgen_futures::JsFuture;
 
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
 pub async fn main(event: FetchEvent) -> Promise {
     let request = event.request();
+
     let url = match Url::parse(&request.url()) {
         Ok(v) => v,
         Err(_) => return Promise::reject(&JsValue::from("Could not parse url")),
