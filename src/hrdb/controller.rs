@@ -149,7 +149,7 @@ async fn commit(location: Location, updated: Page) -> Result<(), String> {
     // check that this commit is being applied to the head
     let head    = head(location.clone()).await?;
     let version = location.version()?;
-    let ver_no  = versions(location.clone()).await?.len();
+    let ver_no  = versions(location.clone()).await?.len() - 1; // ver_no indexes versions.
     if version != head.version()? {
         // return Err(format!("head: {}, version: {}", head, version));
         return Err("Can only create a Page on latest version of a Branch".to_owned());
