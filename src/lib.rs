@@ -30,6 +30,7 @@ use logger::log;
 use route::Route;
 use cookie::Cookie;
 use wasm_bindgen_futures::JsFuture;
+use hrdb::controller;
 
 /// Takes an event, handles it, and returns a promise containing a response.
 #[wasm_bindgen]
@@ -61,6 +62,13 @@ pub async fn respond(request: Request, path: Route, method: String, authed: bool
         // root -> redirect to home
         None => responder::redirect("/home")
             .ok_or("Could not redirect".to_owned()),
+
+        // init -> initialize HRDB
+        Some(i) if i == "init" => {
+            controller::init().await?;
+            responder::redirect("/home")
+                .ok_or("Initialized HRDB, but could not redirect".to_owned())
+        },
 
         // static -> retrieve a static asset
         Some(s) if s == "static" => match method.as_ref() {
@@ -97,18 +105,23 @@ pub async fn respond(request: Request, path: Route, method: String, authed: bool
         // edit -> load the editor '/branch/id'
         Some(e) if e == "edit" => match method.as_ref() {
             "get"  => renderer::edit::respond(path).await,
-            // "post" => renderer::edit::form(path, request).await,
+            "post" if authed => renderer::edit::form(request, path).await,
+            "post" if !authed => responder::redirect(&path.to_string())
+                .ok_or("Not authenticated; could not redirect".to_owned()),
             u     => Err(format!("'{}' method not allowed on /auth", u)),
-
         }
 
+        // create -> create new page
+        Some(c) if c == "create" => match method.as_ref() {
+            "get" if authed => renderer::create::respond(path).await,
+            "get" if !authed => Err("You must be authenticated to create a new page".to_owned()),
+            u     => Err(format!("'{}' method not allowed on /create", u)),
+        }
 
         // unimplemented
 
         // search -> search master for query
         Some(s) if s == "search" => renderer::search::respond(path).await,
-
-        Some(c) if c == "create" => renderer::create::respond(path).await,
         Some(d) if d == "delete" => renderer::delete::respond(path).await,
         Some(r) if r == "relocate" => renderer::relocate::respond(path).await,
 

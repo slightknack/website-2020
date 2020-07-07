@@ -23,8 +23,8 @@ pulldown-cmark = { version = "0.7", default-features = false }
 sha2 = "0.9"   # content addressing
 # I'm not using scrypt atm due to WASM incompatibility.
 # If this changes in the future, I might migrate to it.
-# scrypt = "0.3" # authentication
-# getrandom = "0.1"
+scrypt = "0.3" # authentication
+getrandom = { version = "0.1", features = ["wasm-bindgen"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 url = "1.7"

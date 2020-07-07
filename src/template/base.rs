@@ -13,8 +13,10 @@ pub struct Actions {
 
 #[derive(Content)]
 pub struct Child {
-    pub id:    String,
-    pub value: String,
+    pub id:     String,
+    pub branch: String,
+    pub ver_no: String,
+    pub value:  String,
 }
 
 #[derive(Content)]

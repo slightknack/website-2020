@@ -130,6 +130,8 @@ nav {
 }
 
 .page {
+    margin-top: 6vh;
+    margin-bottom: 6vh;
     padding-left: 3vh;
     padding-right: 3vh;
     margin-left: auto;
@@ -142,8 +144,8 @@ p {
     hyphens: auto;
     margin-top: 2vh;
     margin-bottom: 2vh;
-    overflow-x: auto;
-    overflow-y: hidden;
+/*     overflow-x: auto; */
+/*     overflow-y: hidden; */
 }
 
 h1,
@@ -332,11 +334,11 @@ strong {
 }
 
 img {
-    margin-top: 2vh;
-    margin-bottom: 2vh;
-    margin-left: -2vh;
-    margin-right: -2vh;
-    width: calc(100% + 4vh);
+    margin-top: 3vh;
+    margin-bottom: 3vh;
+    margin-left: -3vh;
+    margin-right: -3vh;
+    width: calc(100% + 6vh);
 }
 
 table {
@@ -347,7 +349,7 @@ table {
     display: block;
     overflow-x: auto;
     overflow-y: hidden;
-    white-space: pre-line;
+    white-space: nowrap;
 }
 
 thead {
@@ -364,11 +366,8 @@ thead tr {
     border-top: none;
 }
 
-td, td {
-    padding: 0.8vh;
-    padding-left: 2vh;
-
-}
+td { padding: 0.8vh; }
+th { padding: 0.8vh; }
 
 textarea {
     padding: 2vh;

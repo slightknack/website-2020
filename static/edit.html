@@ -1,11 +1,12 @@
 <div class="page">
-    <h1 class="title">{{title}}</h1>
+    <h1 class="title">Editing</h1>
     <p>
         You must be authenticated for your changes to save. Styling with
         <a href="https://commonmark.org/help/">Markdown</a> is supported.
     </p>
 
-    <form id="document">
+    <form id="document" action="/edit/{{branch}}/{{id}}" method="post">
+        <input name="title" type="text" placeholder="Title" value="{{title}}">
         <textarea
             id="editor"
             name="editor"

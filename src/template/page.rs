@@ -13,10 +13,12 @@ pub async fn render(
     title:   String,
     content: String,
     branch:  String,
-    ver_no:  String,
-    id:      String,
+    vn:      usize,
+    iden:    String,
+    is_head: bool,
+    is_root: bool,
     parent:  String,
-    child_pair: Vec<(String, String)>,
+    child_pair: Vec<(String, String)>, // (title, id)
 ) -> Result<String, String> {
     // get the templates
     let base = Template::new(asset("base.html").await?)
@@ -24,13 +26,32 @@ pub async fn render(
     let page = Template::new(asset("page.html").await?)
         .ok().ok_or("Could not create page template")?;
 
+
+    let ver_no = if is_head { "head".to_owned() } else { vn.to_string()  };
+    let id     = if is_root { "root".to_owned() } else { iden.to_owned() };
+
+    let mut items = vec![];
+    if !is_root {
+        items.push((
+            "arrow_back",
+            Route::over(vec!["perma".to_string(), branch.clone(), ver_no.clone(), parent]),
+            "Back"
+        ))
+    }
+    items.append(&mut vec![
+        ("push_pin", Route::over(vec!["perma".to_string(), branch.clone(), vn.to_string(), id.clone()]), "Permalink this Version"),
+        ("edit", Route::over(vec!["edit".to_string(), branch.clone(), iden.clone()]), "Edit this Page"),
+    ]);
+    if !is_head {
+        items.push((
+            "update",
+            Route::over(vec!["perma".to_string(), branch.clone(), "head".to_string(), id.clone()]),
+            "Jump to Present"
+        ))
+    }
+
     let actions = Actions {
-        items: vec![
-            ("arrow_back", Route::over(vec!["perma".to_string(), branch.clone(), ver_no.to_string(), parent]), "Back"),
-            ("push_pin", Route::over(vec!["perma".to_string(), branch.clone(), ver_no.to_string(), id.clone()]), "Permalink this Version"),
-            ("edit", Route::over(vec!["edit".to_string(), branch.clone(), id.clone()]), "Edit this Page"),
-            ("update", Route::over(vec!["perma".to_string(), branch.clone(), "head".to_string(), id.clone()]), "Jump to Present"),
-        ].into_iter()
+        items: items.into_iter()
             .map(
             |action| {
                 let (icon, route, value) = action;
@@ -49,7 +70,7 @@ pub async fn render(
             .map(
                 |pair| {
                     let (title, id) = pair;
-                    Child { id, value: title }
+                    Child { branch: branch.clone(), id, ver_no: ver_no.clone(), value: title }
                 }
             )
             .collect::<Vec<Child>>(),
@@ -61,8 +82,8 @@ pub async fn render(
     let base_data = Base {
         title,
         content: page_rendered,
-        children: None, // Some(children),
-        actions: Some(actions)
+        children: if children.items.is_empty() { None } else { Some(children) },
+        actions:  if actions.items.is_empty()  { None } else { Some(actions)  },
     };
     let base_rendered = base.render(&base_data);
     return Ok(base_rendered);

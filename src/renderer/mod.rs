@@ -9,3 +9,6 @@ pub mod create;
 pub mod edit;
 pub mod delete;
 pub mod relocate;
+
+mod form;
+mod page;

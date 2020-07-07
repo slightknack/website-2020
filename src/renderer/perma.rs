@@ -3,7 +3,9 @@ use web_sys::Response;
 use crate::responder;
 use crate::template;
 use crate::route::Route;
+use crate::renderer::page;
 use crate::hrdb::{location::Location, controller};
+use crate::logger::log;
 
 pub async fn respond(path: Route) -> Result<Response, String> {
     let (b, vn, id) = (
@@ -14,7 +16,6 @@ pub async fn respond(path: Route) -> Result<Response, String> {
 
     let branch = Location::from_branch(b.to_owned());
     let versions = controller::versions(branch).await?;
-
 
     let version = if vn == "head" {
         // redirect to shorthand page
@@ -32,21 +33,8 @@ pub async fn respond(path: Route) -> Result<Response, String> {
         controller::locate_id(version.to_owned(), id.to_owned()).await?
     };
 
-    let parent = match location.back() {
-        Ok(p)  => p.id().await?,
-        Err(_) => location.id().await?,
+    return match page::shortify(location.clone()).await? {
+        Some(r) if vn == "head" => Ok(r),
+        _ => page::render(location).await,
     };
-
-    let (title, content, _) = controller::read(&location).await?;
-    let html = template::page::render(
-        title,
-        content,
-        b.to_owned(),
-        vn.to_owned(),
-        id.to_owned(),
-        parent,
-        vec![], // need to get children
-    ).await?;
-    responder::html(&html, 200)
-        .ok_or("Could not generate response for location query".to_owned())
 }

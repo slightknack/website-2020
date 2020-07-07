@@ -4,8 +4,10 @@ use crate::route::Route;
 
 #[derive(Content)]
 struct Edit {
-    title: String,
-    old:   String,
+    title:  String,
+    old:    String,
+    branch: String,
+    id:     String,
 }
 
 pub async fn render(
@@ -40,7 +42,7 @@ pub async fn render(
     };
 
     // flesh them out
-    let edit_data = Edit { title: title.clone(), old };
+    let edit_data = Edit { title: title.clone(), old, branch, id };
     let edit_rendered = edit.render(&edit_data);
     let base_data = Base {
         title: "Editing — ".to_owned() + &title,

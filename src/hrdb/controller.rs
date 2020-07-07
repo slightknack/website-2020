@@ -29,6 +29,14 @@ pub async fn versions(location: Location) -> Result<Vec<Location>, String> {
     )
 }
 
+pub async fn head(location: Location) -> Result<Location, String> {
+    Ok(
+        versions(location).await?.last()
+            .ok_or("No versions exist on this branch")?
+            .to_owned()
+    )
+}
+
 pub fn root(location: Location) -> Result<Location, String> {
     Ok(
         Location::from_branch_version_and_path(
@@ -139,16 +147,12 @@ pub async fn fork(from: Location, into: Location) -> Result<(), String> {
 async fn commit(location: Location, updated: Page) -> Result<(), String> {
     // commits can only be applied to the head version of the branch
     // check that this commit is being applied to the head
-    let head    = Branch::from(&location.branch()).await?.head()?;
+    let head    = head(location.clone()).await?;
     let version = location.version()?;
-    if version != head {
+    let ver_no  = versions(location.clone()).await?.len();
+    if version != head.version()? {
+        // return Err(format!("head: {}, version: {}", head, version));
         return Err("Can only create a Page on latest version of a Branch".to_owned());
-    }
-
-    if location.branch() == "master" {
-        let id     = location.id().await?;
-        let ver_no = versions(location.clone()).await?.len();
-        Shorthand::update(updated.short(), ver_no, id).await?;
     }
 
     // get the new address of the page that has been updated
@@ -161,6 +165,8 @@ async fn commit(location: Location, updated: Page) -> Result<(), String> {
         .ok_or("Can not commit to a path without a Page")?,
     ).await?;
 
+    Shorthand::update(child.short(), ver_no, child.id()).await?;
+
     // work back through the path in parent child pairs
     // replacing the parent's reference to the child with the updated child's address
     for parent in addresses {
@@ -168,12 +174,17 @@ async fn commit(location: Location, updated: Page) -> Result<(), String> {
         page.children.insert(child.id(), address);
         address = utils::write(&page.to_string()?).await?;
         child   = page;
+
+        // update shorthand
+        if location.branch() == "master" {
+            Shorthand::update(child.short(), ver_no, child.id()).await?;
+        }
     }
 
     // push the updated root version onto the branch tree if there was an update
-    if address != head {
-        utils::push(&location.branch(), address).await?;
-    }
+    // if address != head.end()? {
+    //     utils::push(&location.branch(), address).await?;
+    // }
 
     return Ok(());
 }
@@ -185,11 +196,13 @@ pub async fn create(
     title: String,
     content: String,
     fields: HashMap<String, String>,
-) -> Result<(), String> {
-    let new     = Page::new(title, content, fields);
+) -> Result<Location, String> {
+    let c       = utils::write(&content.to_string()).await?;
+    let new     = Page::new(title, c, fields);
     let address = utils::write(&new.to_string()?).await?;
-    commit(location.forward(address)?, new).await?;
-    return Ok(());
+    let child = location.forward(address)?;
+    commit(child.clone(), new).await?;
+    return Ok(child);
 }
 
 pub async fn edit(
@@ -212,11 +225,18 @@ pub async fn edit(
 pub async fn read(location: &Location) -> Result<(String, String, HashMap<String, String>), String> {
     let page = Page::from(&location.end()?).await?;
 
+    log(&format!("title, {:?}; short: {:?}", page.title, page.short()));
+
     let title   = page.title;
     let content = utils::read(&page.content).await?;
     let fields  = page.fields;
 
     return Ok((title, content, fields));
+}
+
+pub async fn title(location: &Location) -> Result<String, String> {
+    let page = Page::from(&location.end()?).await?;
+    return Ok(page.title);
 }
 
 // more than just a create and delete.

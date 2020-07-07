@@ -34,7 +34,7 @@
                     {{#children}}
                         <ul>
                             {{#items}}
-                            <li><a href="/perma/{{ver_no}}/{{id}}">{{value}}</a></li>
+                            <li><a href="/perma/{{branch}}/{{ver_no}}/{{id}}">{{value}}</a></li>
                             {{/items}}
                         </ul>
                         <!-- Page actions  -->
@@ -51,10 +51,10 @@
                             {{/items}}
                     </ul>
                     {{/actions}}
-                    <hr>
-                    <p>
-                        All <em>content</em> © Isaac Clayton.
-                    </p>
+                    <div hidden>
+                        <hr>
+                        <p>All <em>content</em> © Isaac Clayton.</p>
+                    </div>
                 </div>
                 <script>
                     function menuToggle() {

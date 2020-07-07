@@ -1,12 +1,13 @@
 use serde::{Serialize, Deserialize};
 use sha2::Digest;
+use crate::hrdb::controller;
 use crate::hrdb::page::Page;
 
 /// The location of a specific page at a specific version on a specific branch.
 /// branch is the name of the branch,
 /// version is the hash of the root,
 /// path is a list of checksums.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Location((String, Option<(String, Option<Vec<String>>)>));
 
 impl Location {
@@ -29,6 +30,16 @@ impl Location {
 
     pub fn version(&self) -> Result<String, String> {
         Ok(((self.0).1).clone().ok_or("Location does not specify a version")?.0)
+    }
+
+    pub async fn ver_no(&self) -> Result<usize, String> {
+        let version = self.version()?;
+        controller::versions(self.clone()).await?
+            .iter().position(|l| match l.version() {
+                Ok(v)  => v == version,
+                Err(e) => false,
+            })
+            .ok_or("Could not find version number".to_owned())
     }
 
     pub fn path(&self) -> Result<Vec<String>, String> {
