@@ -149,7 +149,7 @@ async fn commit(location: Location, updated: Page) -> Result<(), String> {
     // check that this commit is being applied to the head
     let head    = head(location.clone()).await?;
     let version = location.version()?;
-    let ver_no  = versions(location.clone()).await?.len() - 1; // ver_no indexes versions.
+    let ver_no  = versions(location.clone()).await?.len(); // ver_no indexes versions.
     if version != head.version()? {
         // return Err(format!("head: {}, version: {}", head, version));
         return Err("Can only create a Page on latest version of a Branch".to_owned());
@@ -181,10 +181,7 @@ async fn commit(location: Location, updated: Page) -> Result<(), String> {
         }
     }
 
-    // push the updated root version onto the branch tree if there was an update
-    // if address != head.end()? {
-    //     utils::push(&location.branch(), address).await?;
-    // }
+    utils::push(&location.branch(), address).await?;
 
     return Ok(());
 }
