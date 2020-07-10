@@ -155,34 +155,30 @@ async fn commit(location: Location, updated: Page) -> Result<(), String> {
         return Err("Can only create a Page on latest version of a Branch".to_owned());
     }
 
-    // get the new address of the page that has been updated
-    let mut address = utils::write(&updated.to_string()?).await?;
-
-    // next, build an iterator going to the version root through the page tree
-    let path          = location.path()?;
-    let mut addresses = path.iter().rev();
-    let mut child     = Page::from(addresses.next()
-        .ok_or("Can not commit to a path without a Page")?,
-    ).await?;
-
-    Shorthand::update(child.short(), ver_no, child.id()).await?;
-
-    // work back through the path in parent child pairs
-    // replacing the parent's reference to the child with the updated child's address
-    for parent in addresses {
-        let mut page = Page::from(parent).await?;
-        page.children.insert(child.id(), address);
-        address = utils::write(&page.to_string()?).await?;
-        child   = page;
-
-        // update shorthand
+    // load all the pages and update shorthand
+    let mut pages = vec![];
+    for address in location.path()?.iter() {
+        let page = Page::from(address).await?;
         if location.branch() == "master" {
-            Shorthand::update(child.short(), ver_no, child.id()).await?;
+            Shorthand::update(page.short(), ver_no, page.id()).await?;
         }
+        pages.push(page);
+    }
+
+    // get the new address of the page that has been updated
+    let mut address   = utils::write(&updated.to_string()?).await?;
+    let mut addresses = pages.drain(..).rev();
+    let mut child     = addresses.next()
+        .ok_or("Can not commit to a path without a Page")?;
+
+    // iterate through parents backwards, updating new versions
+    for mut parent in addresses {
+        parent.children.insert(child.id(), address);
+        address = utils::write(&parent.to_string()?).await?;
+        child   = parent;
     }
 
     utils::push(&location.branch(), address).await?;
-
     return Ok(());
 }
 
@@ -215,7 +211,6 @@ pub async fn edit(
     if let Some(f) = fields  { page.fields  = f }
 
     commit(location, page).await?;
-
     return Ok(());
 }
 

@@ -20,7 +20,6 @@ pub async fn locate(path: Route) -> Result<Location, String> {
 }
 
 pub async fn respond(path: Route) -> Result<Response, String> {
-    log("responding...");
     let location = locate(path).await?;
     let (title, content, _) = controller::read(&location).await?;
 

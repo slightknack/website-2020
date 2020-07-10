@@ -114,16 +114,22 @@ pub async fn respond(request: Request, path: Route, method: String, authed: bool
         // create -> create new page
         Some(c) if c == "create" => match method.as_ref() {
             "get" if authed => renderer::create::respond(path).await,
-            "get" if !authed => Err("You must be authenticated to create a new page".to_owned()),
+            "get" if !authed => Err("You must be authenticated to create a new Page".to_owned()),
             u     => Err(format!("'{}' method not allowed on /create", u)),
         }
 
-        // unimplemented
+        // delete -> remove page
+        Some(d) if d == "delete" => match method.as_ref() {
+            "get" if authed => renderer::delete::respond(path).await,
+            "get" if !authed => Err("You must be authenticated to delete a Page".to_owned()),
+            u     => Err(format!("'{}' method not allowed on /delete", u)),
+        },
 
+        // unimplemented
         // search -> search master for query
         Some(s) if s == "search" => renderer::search::respond(path).await,
-        Some(d) if d == "delete" => renderer::delete::respond(path).await,
         Some(r) if r == "relocate" => renderer::relocate::respond(path).await,
+        // need to write fork and merge
 
         // otherwise -> call out to create hrdb query
         Some(short) => renderer::shorthand::respond(short).await,
