@@ -21,7 +21,7 @@
         <script>hljs.initHighlightingOnLoad();</script>
     </head>
     <body>
-        <div class="navbar">
+        <div id="navbar" class="closed">
             <nav>
                 <ul class="iconlist">
                     <li><a class="icon" href="/home"><span class="material-icons">home</span></a></li>
@@ -60,13 +60,16 @@
                     function menuToggle() {
                         var toggle = document.getElementById("toggle");
                         var menu   = document.getElementById("menu");
+                        var navbar = document.getElementById("navbar");
 
                         if (toggle.innerHTML === "close") {
                             toggle.innerHTML = "menu";
                             menu.className = "hidden";
+                            navbar.className = "closed";
                         } else {
                             toggle.innerHTML = "close";
                             menu.className = "shown";
+                            navbar.className = "open";
                         }
                     }
                 </script>

@@ -49,6 +49,8 @@
     --keyword: var(--keyword-dark);
     --comment: var(--neutral-mid);
     --literal: var(--literal-dark);
+
+    --snappy: 0.15s ease-out;
 }
 
 @media (prefers-color-scheme:dark) {
@@ -75,6 +77,7 @@ body {
     flex-direction: row;
     flex-wrap: nowrap;
     scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 nav {
@@ -86,21 +89,39 @@ nav {
     background-color: var(--primary);
     color: var(--bg-fill);
     height: calc(100vh - 6vh);
-    max-width: 512px;
-    flex-grow: 0;
+    overflow: auto;
 }
 
+#navbar {
+    max-width: 512px;
+    transition:
+        flex var(--snappy),
+        flex-basis var(--snappy);
+}
+
+.closed { flex-basis: 0; flex-grow: 0; }
+.open   { flex-basis: 256px; flex-grow: 1 }
+
 #menu {
-    transition: flex 0.125s ease-in-out;
-    min-width: calc(256px - 6vh);
+    position: absolute;
+    padding-right: 3vh;
+    padding-bottom: 3vh;
+    transition:
+        opacity var(--snappy),
+        width var(--snappy),
+        height var(--snappy);
 }
 
 .hidden {
-    display: none;
+    height: 0;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
 }
 
 .shown {
     display: block;
+    opacity 1;
 }
 
 @media only screen and (max-width: 512px) {
@@ -111,7 +132,7 @@ nav {
     nav {
         min-width: 0;
         max-width: none;
-        height: auto;
+        height: 100%;
         width: calc(100vw - 6vh);
     }
 
@@ -120,13 +141,25 @@ nav {
     }
 
     #menu {
-        min-width: 0;
+        position: static;
+    }
+
+    .hidden {
+        overflow: hidden;
+        padding: 0 !important;
+        margin: 0;
+        height: 0;
+    }
+
+    .shown {
+        margin-bottom: 3vh;
+        height: 75vh;
     }
 }
 
 .content {
-    flex-grow: 1;
-    min-width: 0;
+    flex-basis: 0;
+    flex-grow: 3;
 }
 
 .page {
@@ -248,8 +281,10 @@ a, .icon > * {
     background-image: linear-gradient(120deg, var(--accent) 0%, var(--accent) 100%);
     background-size: 0 100%;
     background-repeat: no-repeat;
-    background-position: 0 100%;
-    transition: background-size 0.125s ease-in-out, color 0.125s ease-in-out;
+    background-position: 100% 0;
+    transition:
+        background-size var(--snappy),
+        color var(--snappy);
     padding: 2pt;
     border-radius: 2pt;
 }
@@ -264,10 +299,10 @@ a:hover, .icon > *:hover  {
 }
 
 a:after {
-    content: " ❃"; /* Non-breaking space */
+    content: "\00a0❃"; /* Non-breaking space */
     padding-right: 2pt;
     color: var(--accent);
-    transition: color 0.125s ease-in-out;
+    transition: color var(--snappy);
 }
 
 .icon:after {
@@ -317,7 +352,7 @@ button, input[type="submit"], input[type="reset"] {
     font-family: "Spectral SC", serif;
     color: var(--bg-fill);
     background-color: var(--primary);
-    transition: background-color 0.125s ease-in-out;
+    transition: background-color var(--snappy);
 }
 
 button:hover, input[type=submit]:hover, input[type="reset"]:hover {
