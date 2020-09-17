@@ -37,6 +37,8 @@
     --literal-mid:   #188673;
     --literal-dark:  #063D34;
     --literal-black: #011410;
+
+    --snappy: 0.15s ease-out;
 }
 
 :root {
@@ -49,8 +51,6 @@
     --keyword: var(--keyword-dark);
     --comment: var(--neutral-mid);
     --literal: var(--literal-dark);
-
-    --snappy: 0.15s ease-out;
 }
 
 @media (prefers-color-scheme:dark) {
@@ -258,6 +258,11 @@ ol {
     list-style: decimal outside none;
 }
 
+li {
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+}
+
 .navlist,
 .iconlist {
     list-style: none;
@@ -266,6 +271,7 @@ ol {
 
 .iconlist > li {
     display: block;
+    margin: 0;
 }
 
 hr {
