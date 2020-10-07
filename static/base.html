@@ -4,7 +4,9 @@
         <!-- Metadata/Setup -->
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <meta name="description" content="{{title}} — Isaac Clayton" />
+        <!-- I couldn't think of any good descriptions. Sorry if this somehow mislead you :lenny: -->
+        <meta name="description"
+              content="Oopsie, we're having trouble displaying a description for this website. Needless to say, you should still try visiting it!" />
         <title>{{title}} — Isaac Clayton</title>
 
         <!-- Styles/Layout -->
@@ -78,42 +80,30 @@
         <div class="content">
             {{{content}}}
             <!-- Shows Nested Pages -->
+            {{#children}}
             <div class="page">
                 <hr>
-                <h1 class="title">Continue?</h1>
+                <h1 class="title">Related Pages</h1>
+                <ul>
+                    {{#items}}
+                    <li><a href="/perma/{{branch}}/{{ver_no}}/{{id}}">{{value}}</a></li>
+                    {{/items}}
+                </ul>
                 <p>
-                    An adventure awaits...
-                </p>
-                {{#children}}
-                    <h1>Pages</h1>
-                    <ul>
-                        {{#items}}
-                        <li><a href="/perma/{{branch}}/{{ver_no}}/{{id}}">{{value}}</a></li>
-                        {{/items}}
-                    </ul>
-                    <p>
-                        This website is hierarchical—these ↖
-                        are some pages nested within this page.
-                        Meta, right?
-                    </p>
-                    <h1>Lost?</h1>
-                {{/children}}
-                <p>
-                    Keep exploring!
-                </p>
-                <p>
-                    If it's been a long day, there's nothing wrong with
-                    giving up and <a href="/home">going home</a>.
-                </p>
-                <h1>Note</h1>
-                <p>
-                    I'm usually pretty permissive with what I create.
-                    However, my writing is my writing and my opinions are my own.
-                    Although this <em>website's</em> source code is released under
-                    the <strong>MIT</strong> License,
-                    all published <em>content</em> is © Isaac Clayton.
+                    This website is hierarchical, these
+                    are some pages nested within this page.
+                    Meta, right?
                 </p>
             </div>
+            {{/children}}
+            <!-- <h1>Note</h1>
+            <p>
+                I'm usually pretty permissive with what I create.
+                However, my writing is my writing and my opinions are my own.
+                Although this <em>website's</em> source code is released under
+                the <strong>MIT</strong> License,
+                all published <em>content</em> is © Isaac Clayton.
+            </p> -->
             <!--
                 why are you looking through this page's html?
                 it's nothing special.

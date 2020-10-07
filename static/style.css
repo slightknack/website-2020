@@ -74,8 +74,8 @@ body {
     background-color: var(--bg-fill);
     color: var(--text-fill);
     font-family: var(--font-body), sans-serif;
-    font-size: calc(10px + 1.6vh);
-    line-height: 1.3;
+    font-size: 16pt;
+    line-height: 1.4;
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -89,8 +89,8 @@ nav {
     top: 0;
     margin: 0;
     padding: 3vh;
-    background-color: var(--primary);
-    color: var(--bg-fill);
+    background-color: var(--primary-mid);
+    color: var(--accent-white);
     height: calc(100vh - 6vh);
     overflow: auto;
 }
@@ -129,13 +129,13 @@ nav {
 
 @media only screen and (max-width: 512px) {
     body {
-        display: block;
+        flex-direction: column;
     }
 
     nav {
         min-width: 0;
         max-width: none;
-        height: 100%;
+        height: auto;
         width: calc(100vw - 6vh);
     }
 
@@ -152,11 +152,6 @@ nav {
         padding: 0 !important;
         margin: 0;
         height: 0;
-    }
-
-    .shown {
-        margin-bottom: 3vh;
-        height: 75vh;
     }
 }
 
@@ -176,7 +171,7 @@ nav {
 }
 
 p {
-    font-size: calc(10px + 1.6vh);
+    font-size: 16pt;
     hyphens: auto;
     margin-top: 2vh;
     margin-bottom: 2vh;
@@ -198,15 +193,15 @@ h6 {
 }
 
 .title {
-    font-size: calc(18px + 1.6vh);
+    font-size: 24pt;
 }
 
-h1 { font-size: calc(14px + 1.6vh); }
-h2 { font-size: calc(12px + 1.6vh); }
-h3 { font-size: calc(11px + 1.6vh); }
-h4 { font-size: calc(10.6px + 1.6vh); }
-h5 { font-size: calc(10.25px + 1.6vh); }
-h6 { font-size: calc(10.125px + 1.6vh); }
+h1 { font-size: 20pt; }
+h2 { font-size: 18pt; }
+h3 { font-size: 17pt; }
+h4 { font-size: 16.5pt; }
+h5 { font-size: 16.25pt; }
+h6 { font-size: 16.125pt; }
 
 pre {
     overflow: scroll;
@@ -219,7 +214,7 @@ pre {
 }
 
 code {
-    font-size: 0.85em;
+    font-size: 0.93em;
     white-space: nowrap;
     background-color: var(--em-fill);
     font-family: var(--font-mono), monospace;
@@ -294,7 +289,9 @@ a, .icon > * {
     transition:
         background-size var(--snappy),
         color var(--snappy);
-    padding: 2pt;
+/*     padding: 2pt; */
+    padding-top: 4pt;
+    padding-bottom: 4pt;
     border-radius: 2pt;
 }
 
@@ -343,7 +340,7 @@ input {
     color: var(--text-fill);
     font-family: var(--font-body), serif;
     font-size: calc(10px + 1.6vh);
-    line-height: 1.3;
+    line-height: 1.4;
     overflow-x: scroll;
 }
 
@@ -373,8 +370,7 @@ em {
 }
 
 strong {
-    letter-spacing: 0.05em;
-    font-family: var(--font-title), serif;
+    font-weight: bolder;
 }
 
 img {
@@ -420,8 +416,8 @@ textarea {
     background-color: var(--bg-fill);
     color: var(--text-fill);
     font-family: var(--font-mono), monospace;
-    font-size: calc((10px + 1.6vh) * 0.85);
-    line-height: 1.3;
+    font-size: 15pt;
+    line-height: 1.4;
     resize: none;
     overflow: scroll;
     width: calc(100% - 4vh - 4pt);
