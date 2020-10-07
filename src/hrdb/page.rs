@@ -41,13 +41,12 @@ impl Page {
 
     pub fn short(&self) -> String {
         self.title
-            .split_whitespace()
-            .map(|x| x.to_owned())
-            .collect::<Vec<String>>()
-            .join("-")
             .chars()
-            .filter(|x| x.is_ascii_alphanumeric() || x == &'-')
+            .filter(|x| x.is_ascii_alphanumeric() || x == &' ')
             .collect::<String>()
+            .split(" ")
+            .collect::<Vec<&str>>()
+            .join("-")
             .to_lowercase()
     }
 

@@ -165,6 +165,9 @@ async fn commit(location: Location, updated: Page) -> Result<(), String> {
         pages.push(page);
     }
 
+    // Update the potentially changed title of the new page
+    Shorthand::update(updated.short(), ver_no, updated.id()).await?;
+
     // get the new address of the page that has been updated
     let mut address   = utils::write(&updated.to_string()?).await?;
     let mut addresses = pages.drain(..).rev();
