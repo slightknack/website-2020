@@ -6,11 +6,15 @@ use crate::route::Route;
 use crate::hrdb::{location::Location, controller};
 use crate::logger::log;
 
+pub async fn branch_id(path: Route) -> Result<(String, String), String> {
+    return Ok((
+        path.iter().nth(1).ok_or("No branch specified")?.to_owned(),
+        path.iter().nth(2).ok_or("No id specified")?.to_owned(),
+    ));
+}
+
 pub async fn locate(path: Route) -> Result<Location, String> {
-    let (b, id) = (
-        path.iter().nth(1).ok_or("No branch specified")?,
-        path.iter().nth(2).ok_or("No id specified")?,
-    );
+    let (b, id) = branch_id(path).await?;
 
     let branch = Location::from_branch(b.to_owned());
     let head = controller::head(branch).await?;

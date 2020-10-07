@@ -1,6 +1,7 @@
 use std::slice::Iter;
 use std::vec::IntoIter;
 
+#[derive(Debug, Clone)]
 pub struct Route(Vec<String>);
 
 impl Route {

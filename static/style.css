@@ -42,14 +42,17 @@
     --font-body: "Overpass";
     --font-title: "PT Serif";
     --font-mono: "Overpass Mono";
+
+    --primary: var(--primary-mid);
+    --accent:    var(--accent-mid);
+    --text-accent: var(--accent-white);
+
 }
 
 :root {
     --bg-fill:   var(--neutral-white);
     --text-fill: var(--neutral-black);
     --em-fill:   var(--neutral-light);
-    --primary:   var(--primary-dark);
-    --accent:    var(--accent-mid);
 
     --keyword: var(--keyword-dark);
     --comment: var(--neutral-mid);
@@ -61,8 +64,6 @@
         --bg-fill:   var(--neutral-black);
         --text-fill: var(--neutral-white);
         --em-fill:   var(--neutral-dark);
-        --primary:   var(--primary-light);
-        --accent:    var(--accent-mid);
 
         --keyword: var(--keyword-light);
         --comment: var(--neutral-mid);
@@ -89,8 +90,8 @@ nav {
     top: 0;
     margin: 0;
     padding: 3vh;
-    background-color: var(--primary-mid);
-    color: var(--accent-white);
+    background-color: var(--primary);
+    color: var(--text-accent);
     height: calc(100vh - 6vh);
     overflow: auto;
 }
@@ -289,7 +290,7 @@ a, .icon > * {
     transition:
         background-size var(--snappy),
         color var(--snappy);
-/*     padding: 2pt; */
+    padding: 2pt;
     padding-top: 4pt;
     padding-bottom: 4pt;
     border-radius: 2pt;
@@ -300,7 +301,7 @@ a, .icon > * {
 }
 
 a:hover, .icon > *:hover  {
-    color: var(--text-fill);
+    color: var(--text-accent);
     background-size: 100% 100%;
 }
 
@@ -308,7 +309,6 @@ a:after {
     content: "\00a0❃"; /* Non-breaking space */
     padding-right: 2pt;
     color: var(--accent);
-    transition: color var(--snappy);
 }
 
 .icon:after {
@@ -356,7 +356,7 @@ button, input[type="submit"], input[type="reset"] {
     border-radius: 2pt;
     letter-spacing: 0.05em;
     font-family: var(--font-title), serif;
-    color: var(--bg-fill);
+    color: var(--text-accent);
     background-color: var(--primary);
     transition: background-color var(--snappy);
 }
