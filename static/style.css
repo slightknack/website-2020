@@ -39,6 +39,8 @@
     --literal-black: #011410;
 
     --snappy: 0.15s ease-out;
+    --font-base: 15pt;
+    --font-heading: 10pt;
     --font-body: "Overpass";
     --font-title: "PT Serif";
     --font-mono: "Overpass Mono";
@@ -75,7 +77,7 @@ body {
     background-color: var(--bg-fill);
     color: var(--text-fill);
     font-family: var(--font-body), sans-serif;
-    font-size: 16pt;
+    font-size: var(--font-base);
     line-height: 1.4;
     display: flex;
     flex-direction: row;
@@ -172,7 +174,7 @@ nav {
 }
 
 p {
-    font-size: 16pt;
+    font-size: var(--font-base);
     hyphens: auto;
     margin-top: 2vh;
     margin-bottom: 2vh;
@@ -194,15 +196,15 @@ h6 {
 }
 
 .title {
-    font-size: 24pt;
+    font-size: calc(var(--font-base) + var(--font-heading));
 }
 
-h1 { font-size: 20pt; }
-h2 { font-size: 18pt; }
-h3 { font-size: 17pt; }
-h4 { font-size: 16.5pt; }
-h5 { font-size: 16.25pt; }
-h6 { font-size: 16.125pt; }
+h1 { font-size: calc(var(--font-base) + var(--font-heading) / 2); }
+h2 { font-size: calc(var(--font-base) + var(--font-heading) / 3); }
+h3 { font-size: calc(var(--font-base) + var(--font-heading) / 4); }
+h4 { font-size: calc(var(--font-base) + var(--font-heading) / 5); }
+h5 { font-size: calc(var(--font-base) + var(--font-heading) / 6); }
+h6 { font-size: calc(var(--font-base) + var(--font-heading) / 7); }
 
 pre {
     overflow: scroll;
@@ -339,7 +341,7 @@ input {
     background-color: var(--bg-fill);
     color: var(--text-fill);
     font-family: var(--font-body), serif;
-    font-size: calc(10px + 1.6vh);
+    font-size: var(--font-base);
     line-height: 1.4;
     overflow-x: scroll;
 }
@@ -416,7 +418,7 @@ textarea {
     background-color: var(--bg-fill);
     color: var(--text-fill);
     font-family: var(--font-mono), monospace;
-    font-size: 15pt;
+    font-size: calc(var(--font-base) * 0.93);
     line-height: 1.4;
     resize: none;
     overflow: scroll;
