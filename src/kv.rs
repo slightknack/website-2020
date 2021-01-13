@@ -29,8 +29,8 @@ extern "C" {
     #[wasm_bindgen(static_method_of = AddressedNS)]
     pub fn delete(key: &str) -> Promise;
 
-    // #[wasm_bindgen(static_method_of = AddressedNS)]
-    // pub fn list() -> Promise;
+    #[wasm_bindgen(static_method_of = AddressedNS)]
+    pub fn list() -> Promise;
 }
 
 #[wasm_bindgen]

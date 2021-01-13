@@ -133,6 +133,8 @@ pub async fn respond(request: Request, path: Route, method: String, authed: bool
         Some(r) if r == "relocate" => renderer::relocate::respond(path).await,
         // need to write fork and merge
 
+        Some(d) if d == "dump" => renderer::dump::respond(path).await,
+
         // otherwise -> call out to create hrdb query
         Some(short) => renderer::shorthand::respond(short).await,
     }

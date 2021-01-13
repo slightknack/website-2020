@@ -12,3 +12,5 @@ pub mod relocate;
 
 mod form;
 mod page;
+
+pub mod dump;
