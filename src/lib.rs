@@ -133,7 +133,12 @@ pub async fn respond(request: Request, path: Route, method: String, authed: bool
         Some(r) if r == "relocate" => renderer::relocate::respond(path).await,
         // need to write fork and merge
 
-        Some(d) if d == "dump" => renderer::dump::respond(path).await,
+        Some(d) if d == "dump" => match method.as_ref() {
+            "get" if authed => renderer::dump::respond(path).await,
+            "get" if !authed => responder::redirect("/auth")
+                .ok_or("Not authenticated; could not redirect".to_owned()),
+            u     => Err(format!("'{}' method not allowed on /dump", u)),
+        },
 
         // otherwise -> call out to create hrdb query
         Some(short) => renderer::shorthand::respond(short).await,
