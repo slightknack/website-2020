@@ -4,4 +4,4 @@ I've always wanted to write a website for myself, and things recently fell in pl
 
 I gave a talk at a Utah Rust 2020 meetup where I explain some context around this project and walk through a small demo. You can find the [slides and recorded presentation here](https://github.com/slightknack/wasm-rust-pres).
 
-I've since rewritten my website using Zola; the [newer version can be found here](https://github.com/slightknack/slightknack.dev).
+I've since rewritten my [website using Zola](https://slightknack.dev); the [newer version can be found here](https://github.com/slightknack/slightknack.dev).
